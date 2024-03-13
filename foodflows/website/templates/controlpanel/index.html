@@ -1,0 +1,17 @@
+{% extends "_base.html" %}
+
+{% block title %}Urban Food Flows{% endblock %}
+
+{% block content %}
+
+<h1>Welcome, {{ request.user.first_name }}</h1>
+
+<p>Select which city you want to manage</p>
+
+<ul>
+  {% for each in CITIES %}
+    <li><a href="{% url "controlpanel_city" each.id %}">{{ each }}</a></li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

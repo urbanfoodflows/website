@@ -1,0 +1,10 @@
+Django==5.0.2
+psycopg2
+pandas
+openpyxl
+markdown
+bleach
+django-cleanup
+django-mdeditor
+odfpy
+Pillow

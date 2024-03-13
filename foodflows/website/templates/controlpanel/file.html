@@ -1,0 +1,127 @@
+{% extends "_base.html" %}
+
+{% block title %}Urban Food Flows{% endblock %}
+
+{% block header %}
+<style type="text/css">
+dl.split {
+  columns: 2;
+} 
+</style>
+{% endblock %}
+
+{% block content %}
+
+<h1>File #{{ file.id }}</h1>
+<dl class="split">
+  <dt>Status</dt>
+  <dd>{{ file.status }}</dd>
+
+  <dt>File</dt>
+  <dd><a href="{{ file.file.url }}">{{ file.original_name }}</a></dd>
+
+  <dt>City</dt>
+  <dd>{{ file.city }}</dd>
+
+  <dt>Uploader</dt>
+  <dd>{{ file.user.first_name }}</dd>
+
+  <dt>Date</dt>
+  <dd>{{ file.date }}</dd>
+
+  {% if file.description %}
+    <dt>Description</dt>
+    <dd>{{ file.description|linebreaksbr }}</dd>
+  {% endif %}
+
+  <dt>File size</dt>
+  <dd>{{ file.file.size|filesizeformat }}</dd>
+
+</dl>
+
+<h3>Data analysis</h3>
+
+{% if errors %}
+  {% for each in errors %}
+    <div class="alert alert-danger">{{ each }}</div>
+  {% endfor %}
+{% endif %}
+
+<div class="split">
+  <dl>
+    <dt>Columns</dt>
+    <dd>{{ info.columns }}</dd>
+
+    <dt>Number of rows</dt>
+    <dd><pre>{{ df.count }}</pre></dd>
+
+  </dl>
+
+  <dl>
+    <dt>Origins - <a href="{% url "controlpanel_activities" %}">View full list</a></dt>
+    <dd>
+      <ul>
+        {% for each in info.origins %}
+          <li class="text-{% if each in activities %}success{% else %}danger{% endif %}">{{ each }}</li>
+        {% endfor %}
+      </ul>
+    </dd>
+  </dl>
+
+  <dl>
+    <dt>Destinations - <a href="{% url "controlpanel_activities" %}">View full list</a></dt>
+    <dd>
+      <ul>
+        {% for each in info.destinations %}
+          <li class="text-{% if each in activities %}success{% else %}danger{% endif %}">{{ each }}</li>
+        {% endfor %}
+      </ul>
+    </dd>
+  </dl>
+
+  <dl>
+    <dt>Food groups - <a href="{% url "controlpanel_foodgroups" %}">View full list</a></dt>
+    <dd>
+      <ul>
+        {% for each in info.groups %}
+          <li class="text-{% if each in groups %}success{% else %}danger{% endif %}">{{ each }}</li>
+        {% endfor %}
+      </ul>
+    </dd>
+  </dl>
+
+</div>
+
+<h3>Actions</h3>
+
+<div class="row pb-4">
+  <div class="col-sm-6 mb-3 mb-sm-0">
+    <div class="card ">
+      <div class="card-body">
+        <h5 class="card-title">Save data</h5>
+        <p class="card-text">If everything looks good, you can save the data to the database. IMPORTANT: this will <strong>replace</strong>
+        all data currently in the database. You can always restore a previous file as long if needed.</p>
+        <form method="post">
+          <button name="save" value="true" class="btn btn-success">Save data</button>
+          {% csrf_token %}
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Remove file</h5>
+        <p class="card-text">Does this not look good? Fix the file and upload it again. Remove this file to keep the list clean.</p>
+        <form method="post">
+          <button name="delete" value="true" class="btn btn-danger">Delete this file</button>
+          {% csrf_token %}
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<a class="btn btn-primary" href="{% url "controlpanel_city" file.city.id %}">&laquo; Back to files list</a>
+
+{% endblock %}

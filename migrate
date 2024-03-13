@@ -1,0 +1,2 @@
+sudo docker exec -it foodflows_web python foodflows/manage.py makemigrations
+sudo docker exec -it foodflows_web python foodflows/manage.py migrate

@@ -1,0 +1,18 @@
+{% extends "_base.html" %}
+
+{% block title %}Origins and Destinations{% endblock %}
+
+{% block content %}
+
+<h1>Origins and Destinations</h1>
+
+<p>Below is the list of the different options that can be entered under 'Origin' or 'Destination'. Please
+note that they must be spelled exactly the same.</p>
+
+<ul>
+  {% for each in activities %}
+    <li>{{ each }}</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

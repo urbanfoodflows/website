@@ -1,0 +1,193 @@
+from django.shortcuts import render
+from .models import *
+from django.contrib import messages
+from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required
+import pandas as pd
+
+# Quick debugging, sometimes it's tricky to locate the PRINT in all the Django
+# output in the console, so just using a simply function to highlight it better
+def p(text):
+    print("----------------------")
+    print(text)
+    print("----------------------")
+
+def index(request):
+    context = {
+        "menu": "index",
+    }
+
+    return render(request, "index.html", context)
+
+def city(request, id):
+    context = {
+        "info": City.objects.get(pk=id),
+    }
+
+    return render(request, "city.html", context)
+
+@login_required
+def controlpanel(request):
+    context = {
+        "controlpanel": True,
+    }
+
+    return render(request, "controlpanel/index.html", context)
+
+@login_required
+def controlpanel_city(request, id):
+    city = City.objects.get(pk=id)
+
+    if request.method == "POST":
+
+        if request.FILES.get("file"):
+            file = DataFile.objects.create(
+                file = request.FILES.get("file"),
+                original_name = request.FILES['file'].name,
+                description = request.POST.get("description"),
+                city = city,
+                user = request.user,
+            )
+            messages.success(request, "Your spreadsheet has been uploaded. Please see below the data review of this file.")
+            return redirect("controlpanel_file", id=file.id)
+
+        elif request.POST.get("population"):
+            Population.objects.create(
+                population = request.POST.get("population"),
+                year = request.POST.get("year"),
+                city = city,
+                source = request.POST.get("source"),
+            )
+            messages.success(request, "Population data was saved.")
+            return redirect(request.get_full_path())
+
+    if "delete_population" in request.GET:
+        Population.objects.get(pk=request.GET["delete_population"]).delete()
+        messages.success(request, "Population data was deleted.")
+        return redirect("controlpanel_city", id=city.id)
+
+    context = {
+        "controlpanel": True,
+        "city": city,
+        "files": DataFile.objects.filter(city_id=id),
+        "population": Population.objects.filter(city_id=id),
+    }
+
+    return render(request, "controlpanel/city.html", context)
+
+@login_required
+def controlpanel_file(request, id):
+    file = DataFile.objects.get(pk=id)
+
+    try:
+        df = pd.read_excel(file.file)
+        df.dropna(how='all', inplace = True) 
+        column_count = len(df.columns)
+        errors = []
+        info = {}
+        info["columns"] = column_count
+        info["origins"] = df["Origin"].unique()
+        info["destinations"] = df["Destination"].unique()
+        info["groups"] = df["Food group"].unique()
+
+        #info["origins"] = map(str.strip, info["origins"])
+        #info["destinations"] = map(str.strip, info["destinations"])
+        #info["groups"] = map(str.strip, info["groups"])
+
+        if column_count != 9:
+            errors.append("The number of columns is " + str(column_count) + ". However, we expect 9 columns. Please review.")
+    except Exception as e:
+        errors.append("There was a problem reading and interpreting the file. This is the error: " + str(e))
+
+    activities = {}
+    for each in Activity.objects.all():
+        activities[each.name] = each.id
+
+    groups = {}
+    for each in FoodGroup.objects.all():
+        groups[each.name] = each.id
+
+    if "delete" in request.POST:
+        city_id = int(file.city.id)
+        file.delete()
+        messages.success(request, "The spreadsheet has been deleted.")
+        return redirect("controlpanel_city", id=city_id)
+
+    if "save" in request.POST:
+        a = DataFile.objects.filter(status="imported")
+        a.update(status="superseded")
+        file.status = "imported"
+        file.save()
+
+        items = []
+
+        i = 2 # Skip the header row
+        for row in df.itertuples():
+            i += 1
+            origin = row[1]
+            destination = row[2]
+            food = row[3]
+            foodgroup = row[4]
+            year = row[5]
+            quantity = row[6]
+            location = row[7]
+            segment = row[8]
+            sankey = row[9]
+
+            print(origin,destination,food,foodgroup,year,quantity,location,segment,sankey)
+            try:
+                items.append(Data(
+                    source_id = activities[origin],
+                    target_id = activities[destination],
+                    food = food,
+                    food_group_id = groups[foodgroup],
+                    year = year,
+                    quantity = quantity,
+                    location = location,
+                    segment = segment,
+                    sankey = True if sankey == "yes" or sankey == True else False,
+                ))
+            except Exception as e:
+                errors.append(f"We were unable to add row {i}. This is the error that came back: {e} is invalid.")
+
+        if not errors:
+            try:
+                Data.objects.bulk_create(items)
+                messages.success(request, "The data have been saved in the database. Previous data was overwritten.")
+                return redirect("controlpanel_city", id=file.city.id)
+            except Exception as e:
+                errors.append(f"We were unable to save the data. This is the error that came back: {e}")
+
+
+    context = {
+        "controlpanel": True,
+        "file": file,
+        "errors": errors,
+        "info": info,
+        "df": df,
+        "activities": activities,
+        "groups": groups,
+    }
+
+    return render(request, "controlpanel/file.html", context)
+
+@login_required
+def controlpanel_activities(request):
+    context = {
+        "controlpanel": True,
+        "activities": Activity.objects.all(),
+    }
+
+    return render(request, "controlpanel/activities.html", context)
+
+@login_required
+def controlpanel_foodgroups(request):
+    context = {
+        "controlpanel": True,
+        "foodgroups": FoodGroup.objects.all(),
+    }
+
+    return render(request, "controlpanel/foodgroups.html", context)
+

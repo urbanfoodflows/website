@@ -1,0 +1,73 @@
+{% extends "_base.html" %}
+
+{% block title %}Urban Food Flows{% endblock %}
+
+{% block content %}
+
+    <h1 class="text-body-emphasis">Getting started</h1>
+    <p class="fs-5 col-md-8">
+      We provide a data visualization dashboard, developed in a platform called Preset, where our urban food 
+      flows data can be explored. Go to our Preset dashboard to view our data.
+    </p>
+
+    <div class="mb-5">
+      <a href="https://f151cf6f.us2a.app.preset.io/superset/dashboard/9/" class="btn btn-primary btn-lg px-4">View dashboard</a>
+    </div>
+
+    <hr class="col-3 col-md-2 mb-5">
+
+    <div class="row g-5">
+      <div class="col-md-6">
+        <h2 class="text-body-emphasis">Cities</h2>
+        <p>We have data dashboards available for the following cities</p>
+        <ul class="list-unstyled ps-0">
+          {% for each in CITIES %}
+          <li>
+            <a class="icon-link mb-1" href="/cities/{{ each.id }}/">
+              <i class="bi bi-arrow-right-circle-fill"></i>
+              {{ each }}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="col-md-6">
+        <h2 class="text-body-emphasis">More Information</h2>
+        <p>Learn more about this initiative, and how you can contribute data for your own city.</p>
+        <ul class="list-unstyled ps-0">
+          <li>
+            <a class="icon-link mb-1" href="/">
+              <i class="bi bi-arrow-right-circle"></i>
+              About Urban Food Flows
+            </a>
+          </li>
+          <li>
+            <a class="icon-link mb-1" href="/">
+              <i class="bi bi-arrow-right-circle"></i>
+              Contribute your own data
+            </a>
+          </li>
+          <li>
+            <a class="icon-link mb-1" href="/">
+              <i class="bi bi-arrow-right-circle"></i>
+              Data Quality Indicators
+            </a>
+          </li>
+          <li>
+            <a class="icon-link mb-1" href="/">
+              <i class="bi bi-arrow-right-circle"></i>
+              Data Download
+            </a>
+          </li>
+          <li>
+            <a class="icon-link mb-1" href="{% url "controlpanel" %}">
+              <i class="bi bi-arrow-right-circle"></i>
+              Control Panel
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+{% endblock %}
