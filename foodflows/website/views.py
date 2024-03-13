@@ -193,4 +193,3 @@ def controlpanel_foodgroups(request):
     }
 
     return render(request, "controlpanel/foodgroups.html", context)
-
