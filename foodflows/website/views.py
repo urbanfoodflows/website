@@ -14,6 +14,7 @@ def p(text):
     print(text)
     print("----------------------")
 
+@login_required
 def index(request):
     context = {
         "menu": "index",
@@ -21,6 +22,7 @@ def index(request):
 
     return render(request, "index.html", context)
 
+@login_required
 def city(request, id):
     context = {
         "info": City.objects.get(pk=id),
@@ -121,44 +123,45 @@ def controlpanel_file(request, id):
         file.status = "imported"
         file.save()
 
-        items = []
+        if False:
+            items = []
 
-        i = 2 # Skip the header row
-        for row in df.itertuples():
-            i += 1
-            origin = row[1]
-            destination = row[2]
-            food = row[3]
-            foodgroup = row[4]
-            year = row[5]
-            quantity = row[6]
-            location = row[7]
-            segment = row[8]
-            sankey = row[9]
+            i = 2 # Skip the header row
+            for row in df.itertuples():
+                i += 1
+                origin = row[1]
+                destination = row[2]
+                food = row[3]
+                foodgroup = row[4]
+                year = row[5]
+                quantity = row[6]
+                location = row[7]
+                segment = row[8]
+                sankey = row[9]
 
-            print(origin,destination,food,foodgroup,year,quantity,location,segment,sankey)
-            try:
-                items.append(Data(
-                    source_id = activities[origin],
-                    target_id = activities[destination],
-                    food = food,
-                    food_group_id = groups[foodgroup],
-                    year = year,
-                    quantity = quantity,
-                    location = location,
-                    segment = segment,
-                    sankey = True if sankey == "yes" or sankey == True else False,
-                ))
-            except Exception as e:
-                errors.append(f"We were unable to add row {i}. This is the error that came back: {e} is invalid.")
+                print(origin,destination,food,foodgroup,year,quantity,location,segment,sankey)
+                try:
+                    items.append(Data(
+                        source_id = activities[origin],
+                        target_id = activities[destination],
+                        food = food,
+                        food_group_id = groups[foodgroup],
+                        year = year,
+                        quantity = quantity,
+                        location = location,
+                        segment = segment,
+                        sankey = True if sankey == "yes" or sankey == True else False,
+                    ))
+                except Exception as e:
+                    errors.append(f"We were unable to add row {i}. This is the error that came back: {e} is invalid.")
 
-        if not errors:
-            try:
-                Data.objects.bulk_create(items)
-                messages.success(request, "The data have been saved in the database. Previous data was overwritten.")
-                return redirect("controlpanel_city", id=file.city.id)
-            except Exception as e:
-                errors.append(f"We were unable to save the data. This is the error that came back: {e}")
+            if not errors:
+                try:
+                    Data.objects.bulk_create(items)
+                    messages.success(request, "The data have been saved in the database. Previous data was overwritten.")
+                    return redirect("controlpanel_city", id=file.city.id)
+                except Exception as e:
+                    errors.append(f"We were unable to save the data. This is the error that came back: {e}")
 
 
     context = {
