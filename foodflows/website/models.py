@@ -78,8 +78,8 @@ class DataFile(models.Model):
         ordering = ["date"]
 
 class Data(models.Model):
-    source = models.ForeignKey(City, on_delete=models.CASCADE, related_name="data_from")
-    target = models.ForeignKey(City, on_delete=models.CASCADE, related_name="data_to")
+    source = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="data_from")
+    target = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name="data_to")
     food = models.CharField(max_length=255)
     food_group = models.ForeignKey(FoodGroup, on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField()

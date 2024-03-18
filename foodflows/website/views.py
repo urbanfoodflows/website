@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 import pandas as pd
+import numpy as np
 
 # Quick debugging, sometimes it's tricky to locate the PRINT in all the Django
 # output in the console, so just using a simply function to highlight it better
@@ -85,7 +86,7 @@ def controlpanel_file(request, id):
 
     try:
         df = pd.read_excel(file.file)
-        df.dropna(how='all', inplace = True) 
+        df.dropna(how="all", inplace = True)
         column_count = len(df.columns)
         errors = []
         info = {}
@@ -94,14 +95,15 @@ def controlpanel_file(request, id):
         info["destinations"] = df["Destination"].unique()
         info["groups"] = df["Food group"].unique()
 
-        #info["origins"] = map(str.strip, info["origins"])
-        #info["destinations"] = map(str.strip, info["destinations"])
-        #info["groups"] = map(str.strip, info["groups"])
-
         if column_count != 9:
             errors.append("The number of columns is " + str(column_count) + ". However, we expect 9 columns. Please review.")
     except Exception as e:
         errors.append("There was a problem reading and interpreting the file. This is the error: " + str(e))
+
+    empty_food_names = df[df["Food name"].isna()]
+    if len(empty_food_names.index):
+        errors.append("Not all rows have a 'food name' value. This value is required - please add it for the missing rows, shown below:")
+        errors.append(mark_safe(empty_food_names.to_html(index=False, justify="left", classes="table")))
 
     activities = {}
     for each in Activity.objects.all():
@@ -120,48 +122,51 @@ def controlpanel_file(request, id):
     if "save" in request.POST:
         a = DataFile.objects.filter(status="imported")
         a.update(status="superseded")
+
         file.status = "imported"
         file.save()
 
-        if False:
-            items = []
+        items = []
 
-            i = 2 # Skip the header row
-            for row in df.itertuples():
-                i += 1
-                origin = row[1]
-                destination = row[2]
-                food = row[3]
-                foodgroup = row[4]
-                year = row[5]
-                quantity = row[6]
-                location = row[7]
-                segment = row[8]
-                sankey = row[9]
+        i = 2 # Skip the header row
+        df = df.replace(np.nan, None) # We want None instead of NaN 
+        for row in df.itertuples():
+            i += 1
+            origin = row[1]
+            destination = row[2]
+            food = row[3]
+            foodgroup = row[4]
+            year = row[5]
+            quantity = row[6]
+            location = row[7]
+            segment = row[8]
+            sankey = row[9]
 
-                print(origin,destination,food,foodgroup,year,quantity,location,segment,sankey)
-                try:
-                    items.append(Data(
-                        source_id = activities[origin],
-                        target_id = activities[destination],
-                        food = food,
-                        food_group_id = groups[foodgroup],
-                        year = year,
-                        quantity = quantity,
-                        location = location,
-                        segment = segment,
-                        sankey = True if sankey == "yes" or sankey == True else False,
-                    ))
-                except Exception as e:
-                    errors.append(f"We were unable to add row {i}. This is the error that came back: {e} is invalid.")
+            try:
+                items.append(Data(
+                    source_id = activities[origin],
+                    target_id = activities[destination],
+                    food = food,
+                    food_group_id = groups[foodgroup],
+                    year = year,
+                    quantity = quantity,
+                    location = location,
+                    segment = segment,
+                    sankey = True if sankey == "yes" or sankey == True else False,
+                    city = file.city,
+                    file = file,
+                ))
+            except Exception as e:
+                errors.append(f"We were unable to add row {i}. This is the error that came back: {e} is invalid.")
 
-            if not errors:
-                try:
-                    Data.objects.bulk_create(items)
-                    messages.success(request, "The data have been saved in the database. Previous data was overwritten.")
-                    return redirect("controlpanel_city", id=file.city.id)
-                except Exception as e:
-                    errors.append(f"We were unable to save the data. This is the error that came back: {e}")
+        if not errors:
+            Data.objects.filter(city=file.city).delete()
+            try:
+                Data.objects.bulk_create(items)
+                messages.success(request, "The data have been saved in the database. Previous data was overwritten.")
+                return redirect("controlpanel_city", id=file.city.id)
+            except Exception as e:
+                errors.append(f"We were unable to save the data. This is the error that came back: {e}")
 
 
     context = {
