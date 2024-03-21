@@ -9,7 +9,7 @@
 <p>Select which city you want to manage</p>
 
 <ul>
-  {% for each in CITIES %}
+  {% for each in cities %}
     <li><a href="{% url "controlpanel_city" each.id %}">{{ each }}</a></li>
   {% endfor %}
 </ul>

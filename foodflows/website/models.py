@@ -11,6 +11,7 @@ class City(models.Model):
     image = models.ImageField(upload_to="cities/", max_length=255, null=True, blank=True)
     description = MDTextField(null=True, blank=True)
     dashboard_link = models.CharField(max_length=255, null=True, blank=True)
+    is_active = models.BooleanField(db_index=True, default=True)
 
     def __str__(self):
         return self.name
@@ -22,7 +23,10 @@ class City(models.Model):
 
     @property
     def get_description(self):
-        return mark_safe(markdown(self.description))
+        if self.description:
+            return mark_safe(markdown(self.description))
+        else:
+            return None
 
 class Population(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE)
@@ -106,3 +110,22 @@ class Page(models.Model):
     class Meta:
         ordering = ["title"]
         db_table = "pages"
+
+class DataDescription(models.Model):
+    description = MDTextField(null=True, blank=True)
+    city = models.ForeignKey(City, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def get_description(self):
+        if self.description:
+            return mark_safe(markdown(self.description))
+        else:
+            return None
+
+    class Meta:
+        ordering = ["activity__name"]
+        db_table = "data_descriptions"

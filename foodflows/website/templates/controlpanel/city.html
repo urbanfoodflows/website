@@ -54,6 +54,21 @@ tr.status-deleted{display:none}
 
 </form>
 
+<h2 class="mt-4">Data descriptions</h2>
+
+{% if descriptions %}
+  <ul>
+    {% for each in descriptions %}
+      <li><a href="{% url "controlpanel_datadescription" city.id each.id %}">{{ each.activity }}</a></li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <div class="alert alert-warning">No data descriptions have been entered.</div>
+{% endif %}
+
+<a href="{% url "controlpanel_datadescription" city.id %}" class="btn btn-info">Add data description</a>
+
+
 <h2 class="mt-4">Population</h2>
 
 {% if population %}

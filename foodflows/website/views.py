@@ -27,6 +27,7 @@ def index(request):
 def city(request, id):
     context = {
         "info": City.objects.get(pk=id),
+        "descriptions": DataDescription.objects.filter(city_id=id),
     }
 
     return render(request, "city.html", context)
@@ -35,6 +36,7 @@ def city(request, id):
 def controlpanel(request):
     context = {
         "controlpanel": True,
+        "cities": City.objects.all(),
     }
 
     return render(request, "controlpanel/index.html", context)
@@ -76,6 +78,7 @@ def controlpanel_city(request, id):
         "city": city,
         "files": DataFile.objects.filter(city_id=id).order_by("status"),
         "population": Population.objects.filter(city_id=id),
+        "descriptions": DataDescription.objects.filter(city_id=id),
     }
 
     return render(request, "controlpanel/city.html", context)
@@ -188,6 +191,31 @@ def controlpanel_file(request, id):
     }
 
     return render(request, "controlpanel/file.html", context)
+
+@login_required
+def controlpanel_datadescription(request, city, id=None):
+
+    info = None
+    if id:
+        info = DataDescription.objects.get(pk=id)
+
+    if request.method == "POST":
+        if not info:
+            info = DataDescription()
+        info.description = request.POST.get("description")
+        info.activity_id = request.POST.get("activity")
+        info.city_id = city
+        info.save()
+        messages.success(request, "Your data description has been saved.")
+        return redirect("controlpanel_city", id=city)
+
+    context = {
+        "city": City.objects.get(pk=city),
+        "info": info,
+        "activities": Activity.objects.all(),
+    }
+
+    return render(request, "controlpanel/datadescription.html", context)
 
 @login_required
 def controlpanel_activities(request):

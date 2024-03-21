@@ -1,0 +1,33 @@
+{% extends "_base.html" %}
+
+{% block title %}Data description{% endblock %}
+
+{% block content %}
+
+<h1>{{ city }}: Data Description</h1>
+
+<form class="form" method="post" id="popform">
+
+  <div class="mb-3">
+    <label class="form-label">Type</label>
+    <select class="form-control" name="activity" required>
+      <option></option>
+      {% for each in activities %}
+        <option value="{{ each.id }}" {% if info.activity == each %}selected{% endif %}>{{ each }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label for="formFile" class="form-label">Description</label>
+    <textarea name="description" rows="10" class="form-control" required>{{ info.description }}</textarea>
+  </div>
+
+  <button type="submit" class="btn btn-success">Save</button>
+  {% csrf_token %}
+
+</form>
+
+<a class="mt-5 btn btn-primary" href="{% url "controlpanel_city" city.id %}">&laquo; Back to files list</a>
+
+{% endblock %}
