@@ -28,6 +28,13 @@ class City(models.Model):
         else:
             return None
 
+    def get_file(self):
+        file = DataFile.objects.filter(status="imported", city=self)
+        if file:
+            return file[0]
+        else:
+            return None
+
 class Population(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField()

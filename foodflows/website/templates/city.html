@@ -17,7 +17,6 @@
 
   </div>
 
-
 <div class="col-3 p-3 text-white bg-dark">
 
     <h2>{{ info }}</h2>
@@ -33,12 +32,14 @@
           Data description
         </a>
       </li>
+      {% if info.get_file %}
       <li>
-        <a href="#" class="nav-link text-white">
+        <a href="{{ info.get_file.file.url }}" class="nav-link text-white">
           <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"></use></svg>
           Download data
         </a>
       </li>
+      {% endif %}
       <li>
         <a href="#" class="nav-link text-white">
           <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
@@ -46,7 +47,7 @@
         </a>
       </li>
       <li>
-        <a href="#" class="nav-link text-white">
+        <a href="https://f151cf6f.us2a.app.preset.io/superset/dashboard/9/" class="nav-link text-white">
           <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
           Go to data dashboard
         </a>
