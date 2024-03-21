@@ -84,7 +84,7 @@ class Data(models.Model):
     food = models.CharField(max_length=255)
     food_group = models.ForeignKey(FoodGroup, on_delete=models.CASCADE)
     year = models.PositiveSmallIntegerField()
-    quantity = models.IntegerField()
+    quantity = models.PositiveBigIntegerField()
     location = models.CharField(max_length=255, null=True, blank=True)
     segment = models.CharField(max_length=255, null=True, blank=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
