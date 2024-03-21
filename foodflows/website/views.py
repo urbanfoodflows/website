@@ -120,6 +120,13 @@ def controlpanel_file(request, id):
         messages.success(request, "The spreadsheet has been deleted.")
         return redirect("controlpanel_city", id=city_id)
 
+    if "delete-data" in request.POST:
+        file.status = "pending"
+        file.save()
+        Data.objects.filter(city=file.city).delete()
+        messages.success(request, "Data has removed from the database. You can re-import or remove the file below.")
+        return redirect(request.get_full_path())
+
     if "save" in request.POST:
         a = DataFile.objects.filter(status="imported", city=file.city)
         a.update(status="superseded")
@@ -153,7 +160,7 @@ def controlpanel_file(request, id):
                     quantity = quantity,
                     location = location,
                     segment = segment,
-                    sankey = True if sankey == "yes" or sankey == True else False,
+                    sankey = True if sankey.lower() == "yes" or sankey == True else False,
                     city = file.city,
                     file = file,
                 ))

@@ -97,6 +97,19 @@ dl div {
 
 </table>
 
+<div class="col-sm-6 mb-3 mt-3">
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title">Remove data</h5>
+      <p class="card-text">Does this not look good? Click here to delete data from the database</p>
+      <form method="post">
+        <button name="delete-data" value="true" class="btn btn-danger">Delete imported data</button>
+        {% csrf_token %}
+      </form>
+    </div>
+  </div>
+</div>
+
 {% else %}
 
 <h3>Data analysis</h3>
