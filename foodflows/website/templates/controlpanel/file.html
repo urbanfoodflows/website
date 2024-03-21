@@ -7,6 +7,9 @@
 dl.split {
   columns: 2;
 } 
+dl div {
+  break-inside: avoid-column;
+}
 </style>
 {% endblock %}
 
@@ -14,30 +17,87 @@ dl.split {
 
 <h1>File #{{ file.id }}</h1>
 <dl class="split">
+  <div>
   <dt>Status</dt>
   <dd>{{ file.status }}</dd>
+  </div>
 
+  <div>
   <dt>File</dt>
   <dd><a href="{{ file.file.url }}">{{ file.original_name }}</a></dd>
+  </div>
 
+  <div>
   <dt>City</dt>
   <dd>{{ file.city }}</dd>
+  </div>
 
+  <div>
   <dt>Uploader</dt>
   <dd>{{ file.user.first_name }}</dd>
+  </div>
 
+  <div>
   <dt>Date</dt>
   <dd>{{ file.date }}</dd>
+  </div>
 
   {% if file.description %}
+    <div>
     <dt>Description</dt>
     <dd>{{ file.description|linebreaksbr }}</dd>
+    </div>
   {% endif %}
 
+  <div>
   <dt>File size</dt>
   <dd>{{ file.file.size|filesizeformat }}</dd>
+  </div>
+
+  <div>
+  <dt>Status</dt>
+  <dd>{{ file.get_status_display }}</dd>
+  </div>
 
 </dl>
+
+{% if file.status == "imported" %}
+
+<h3>Imported data</h3>
+
+<table class="table table-striped">
+  <tr>
+    <th>Origin</th>
+    <th>Destination</th>
+    
+    <th>Food</th>
+    <th>Group</th>
+    <th>Year</th>
+    <th>Quantity</th>
+
+    <th>Location</th>
+    <th>Segment</th>
+    <th>Sankey</th>
+  </tr>
+
+  {% for each in file.data.all %}
+    <tr>
+      <td>{{ each.source }}</td>
+      <td>{{ each.target }}</td>
+      <td>{{ each.food }}</td>
+      <td>{{ each.food_group }}</td>
+      <td>{{ each.year }}</td>
+      <td>{{ each.quantity }}</td>
+
+      <td>{{ each.location|default_if_none:"" }}</td>
+      <td>{{ each.segment|default_if_none:"" }}</td>
+      <td>{{ each.sankey }}</td>
+    </tr>
+  {% endfor %}
+
+</table>
+
+{% else %}
 
 <h3>Data analysis</h3>
 
@@ -121,6 +181,8 @@ dl.split {
     </div>
   </div>
 </div>
+
+{% endif %}
 
 <a class="btn btn-primary" href="{% url "controlpanel_city" file.city.id %}">&laquo; Back to files list</a>
 

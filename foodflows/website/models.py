@@ -89,7 +89,7 @@ class Data(models.Model):
     segment = models.CharField(max_length=255, null=True, blank=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
     sankey = models.BooleanField(db_index=True)
-    file = models.ForeignKey(DataFile, on_delete=models.CASCADE, null=True, blank=True)
+    file = models.ForeignKey(DataFile, on_delete=models.CASCADE, null=True, blank=True, related_name="data")
 
     class Meta:
         db_table = "foodflows"
