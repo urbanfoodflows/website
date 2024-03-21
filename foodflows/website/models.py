@@ -67,6 +67,7 @@ class DataFile(models.Model):
         ("pending", "Pending"),
         ("imported", "Imported"),
         ("superseded", "Superseded"),
+        ("deleted", "Deleted"),
     )
     status = models.CharField(max_length=20, choices=STATUS, default="pending")
 

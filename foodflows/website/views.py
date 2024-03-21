@@ -115,7 +115,8 @@ def controlpanel_file(request, id):
 
     if "delete" in request.POST:
         city_id = int(file.city.id)
-        file.delete()
+        file.status = "deleted"
+        file.save()
         messages.success(request, "The spreadsheet has been deleted.")
         return redirect("controlpanel_city", id=city_id)
 

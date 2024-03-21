@@ -7,6 +7,9 @@
 <style type="text/css">
 td.text-bold{font-weight:bold}
 #popform{display:none}
+tr.status-deleted{text-decoration: line-through;}
+tr.status-deleted a{color:black;text-decoration:none}
+tr.status-deleted a:hover{cursor:auto}
 </style>
 {% endblock %}
 {% block content %}
@@ -22,7 +25,7 @@ td.text-bold{font-weight:bold}
       <th>Status</th>
     </tr>
     {% for each in files %}
-      <tr>
+      <tr class="status-{{ each.status }}">
         <td><a href="{% url "controlpanel_file" each.id %}">File #{{ each.id }}</a></td>
         <td>{{ each.date }}</td>
         <td>{{ each.user }}</td>
