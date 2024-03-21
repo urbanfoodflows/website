@@ -74,7 +74,7 @@ def controlpanel_city(request, id):
     context = {
         "controlpanel": True,
         "city": city,
-        "files": DataFile.objects.filter(city_id=id),
+        "files": DataFile.objects.filter(city_id=id).order_by("status"),
         "population": Population.objects.filter(city_id=id),
     }
 
@@ -121,7 +121,7 @@ def controlpanel_file(request, id):
         return redirect("controlpanel_city", id=city_id)
 
     if "save" in request.POST:
-        a = DataFile.objects.filter(status="imported")
+        a = DataFile.objects.filter(status="imported", city=file.city)
         a.update(status="superseded")
 
         file.status = "imported"

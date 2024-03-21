@@ -7,13 +7,12 @@
 <style type="text/css">
 td.text-bold{font-weight:bold}
 #popform{display:none}
-tr.status-deleted{text-decoration: line-through;}
-tr.status-deleted a{color:black;text-decoration:none}
-tr.status-deleted a:hover{cursor:auto}
+tr.status-deleted{display:none}
 </style>
 {% endblock %}
 {% block content %}
 
+<a class="float-end" href="" id="show_deleted">Show deleted files</a>
 <h1>{{ city }}</h1>
 
 {% if files.count %}
@@ -111,6 +110,11 @@ tr.status-deleted a:hover{cursor:auto}
         e.preventDefault();
         $("#popform").show();
         $(this).hide();
+      });
+      $("#show_deleted").click(function(e){
+        e.preventDefault();
+        $(this).hide();
+        $(".status-deleted").show();
       });
     });
 </script>
