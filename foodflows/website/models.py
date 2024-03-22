@@ -148,7 +148,7 @@ class Indicator(models.Model):
         db_table = "indicators"
 
 class IndicatorDescription(models.Model):
-    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE)
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE, related_name="ratings")
     rating = models.PositiveSmallIntegerField()
     description = models.TextField()
 
@@ -158,3 +158,15 @@ class IndicatorDescription(models.Model):
     class Meta:
         ordering = ["indicator", "rating"]
         db_table = "indicator_descriptions"
+
+class DataQualityIndicator(models.Model):
+    indicator = models.ForeignKey(IndicatorDescription, on_delete=models.CASCADE)
+    data = models.ForeignKey(DataDescription, on_delete=models.CASCADE, related_name="ratings")
+    description = models.TextField(null=True)
+
+    def __str__(self):
+        return f"{self.indicator} for {self.data}"
+
+    class Meta:
+        ordering = ["indicator_id", "indicator__rating"]
+        db_table = "data_quality_indicators"

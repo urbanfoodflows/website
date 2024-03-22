@@ -199,6 +199,15 @@ def controlpanel_datadescription(request, city, id=None):
     if id:
         info = DataDescription.objects.get(pk=id)
 
+    indicators = Indicator.objects.all()
+    dqi = DataQualityIndicator.objects.filter(data=info)
+
+    ratings = []
+    descriptions = {}
+    for each in dqi:
+        ratings.append(each.indicator_id)
+        descriptions[each.indicator.indicator.id] = each.description
+
     if request.method == "POST":
         if not info:
             info = DataDescription()
@@ -206,6 +215,18 @@ def controlpanel_datadescription(request, city, id=None):
         info.activity_id = request.POST.get("activity")
         info.city_id = city
         info.save()
+
+        dqi.delete()
+        for each in indicators:
+            label = "rating_" + str(each.id)
+            rating = request.POST.get(label)
+            if rating:
+                DataQualityIndicator.objects.create(
+                    indicator_id = rating,
+                    data = info,
+                    description = request.POST.get("description_" + str(each.id))
+                )
+
         messages.success(request, "Your data description has been saved.")
         return redirect("controlpanel_city", id=city)
 
@@ -213,6 +234,9 @@ def controlpanel_datadescription(request, city, id=None):
         "city": City.objects.get(pk=city),
         "info": info,
         "activities": Activity.objects.all(),
+        "indicators": indicators,
+        "ratings": ratings,
+        "descriptions": descriptions,
     }
 
     return render(request, "controlpanel/datadescription.html", context)

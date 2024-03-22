@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% load foodflows_extras %}
 
 {% block title %}Data description{% endblock %}
 
@@ -22,6 +23,26 @@
     <label for="formFile" class="form-label">Description</label>
     <textarea name="description" rows="10" class="form-control" required>{{ info.description }}</textarea>
   </div>
+
+  <h2>Data Quality indicators</h2>
+
+  {% for each in indicators %}
+    <h4>{{ each }}</h4>
+    <ul class="list-unstyled">
+      {% for rating in each.ratings.all %}
+        <li>
+          <label>
+          <input type="radio" name="rating_{{ each.id }}" value="{{ rating.id }}" {% if rating.id in ratings %}checked{% endif %} />
+            <strong>{{ rating.rating }}</strong>
+            {{ rating.description }}
+          </label>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <input class="mb-4 form-control" name="description_{{ each.id }}" placeholder="Justification (if not immediately apparent)" value="{{ descriptions|get_item:each.id }}" />
+
+  {% endfor %}
 
   <button type="submit" class="btn btn-success">Save</button>
   {% csrf_token %}
