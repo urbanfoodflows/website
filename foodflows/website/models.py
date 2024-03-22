@@ -136,3 +136,25 @@ class DataDescription(models.Model):
     class Meta:
         ordering = ["activity__name"]
         db_table = "data_descriptions"
+
+class Indicator(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        ordering = ["id"]
+        db_table = "indicators"
+
+class IndicatorDescription(models.Model):
+    indicator = models.ForeignKey(Indicator, on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField()
+    description = models.TextField()
+
+    def __str__(self):
+        return f"{self.indicator} - {self.rating}"
+
+    class Meta:
+        ordering = ["indicator", "rating"]
+        db_table = "indicator_descriptions"
