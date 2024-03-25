@@ -25,9 +25,19 @@ def index(request):
 
 @login_required
 def city(request, id):
+
+    ratings = {}
+    for each in DataQualityIndicator.objects.filter(data__city=id):
+        if not each.indicator.indicator.name in ratings:
+            ratings[each.indicator.indicator.name] = {}
+        ratings[each.indicator.indicator.name][each.data.activity.name] = each.indicator
+
     context = {
         "info": City.objects.get(pk=id),
         "descriptions": DataDescription.objects.filter(city_id=id),
+        "activities": Activity.objects.all(),
+        "indicators": Indicator.objects.all(),
+        "ratings": ratings,
     }
 
     return render(request, "city.html", context)

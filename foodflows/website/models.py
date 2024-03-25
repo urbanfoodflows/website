@@ -124,7 +124,7 @@ class DataDescription(models.Model):
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name
+        return self.activity.name
 
     @property
     def get_description(self):
@@ -154,6 +154,17 @@ class IndicatorDescription(models.Model):
 
     def __str__(self):
         return f"{self.indicator} - {self.rating}"
+
+    @property
+    def color(self):
+        colors = {
+            1: "#3e940e",
+            2: "#d6c521",
+            3: "#eab31d",
+            4: "#f0790d",
+            5: "#e23a3a",
+        }
+        return colors[self.rating]
 
     class Meta:
         ordering = ["indicator", "rating"]
