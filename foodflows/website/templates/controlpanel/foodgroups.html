@@ -11,11 +11,17 @@
   <table class="table table-striped">
     <tr>
       <th>Name</th>
+      <th>Emissions<br>kgco2e</th>
+      <th>Land Use<br>m3</th>
+      <th>Water Use<br>l</th>
       <th>Description</th>
     </tr>
     {% for each in foodgroups %}
       <tr>
         <td>{{ each }}</td>
+        <td>{{ each.emissions|default_if_none:"" }}</td>
+        <td>{{ each.land_use|default_if_none:"" }}</td>
+        <td>{{ each.water_use|default_if_none:"" }}</td>
         <td>{{ each.description|linebreaksbr }}</td>
       </tr>
     {% endfor %}
