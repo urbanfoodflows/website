@@ -18,30 +18,6 @@ def p(text):
 @login_required
 def index(request):
 
-    if "load" in request.GET:
-        info = [
-            ["Alcoholic Beverages", 1.79,1.78,78.90,],
-            ["Cereals - Excluding Beer", 2.28,3.66,722.22,],
-            ["Eggs", 4.67,6.27,577.70,],
-            ["Fish, Seafood", 20.25,5.69,3603.35,],
-            ["Fruits - Excluding Wine", 0.85,1.34,190.08,],
-            ["Meat", 38.94,153.77,1684.82,],
-            ["Milk - Excluding Butter", 13.51,48.37,3116.70,],
-            ["Treenuts", 1.83,11.04,2993.05,],
-            ["Oilcrops", 2.07,2.09,88.20,],
-            ["Pulses", 1.39,11.52,416.15,],
-            ["Starchy Roots", 0.45,0.61,43.75,],
-            ["Stimulants", 37.59,45.29,283.25,],
-            ["Sugar & Sweeteners", 2.11,1.89,279.27,],
-            ["Vegetables", 0.91,0.53,151.50,],
-        ]
-        for each in info:
-            g = FoodGroup.objects.get(name=each[0])
-            g.emissions = each[1]
-            g.land_use = each[2]
-            g.water_use = each[3]
-            g.save()
-
     context = {
         "menu": "index",
     }
