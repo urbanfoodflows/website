@@ -18,11 +18,14 @@
     </tr>
     {% for each in foodgroups %}
       <tr>
-        <td>{{ each }}</td>
+        <td><strong>{{ each }}</strong>
+        <br>
+        {{ each.description|linebreaksbr }}
+        </td>
         <td>{{ each.emissions|default_if_none:"" }}</td>
         <td>{{ each.land_use|default_if_none:"" }}</td>
         <td>{{ each.water_use|default_if_none:"" }}</td>
-        <td>{{ each.description|linebreaksbr }}</td>
+        <td>{{ each.notes_methodology|linebreaksbr }}</td>
       </tr>
     {% endfor %}
   </table>

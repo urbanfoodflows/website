@@ -50,6 +50,7 @@ class FoodGroup(models.Model):
     emissions = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, help_text="Average of GHG emissions per kilogram (Kg of CO2 equivalent)")
     land_use = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Average of Land use per kilogram (m3)")
     water_use = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Average of Freshwater withdrawals per kilogram (liters)")
+    notes_methodology = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name

@@ -18,6 +18,42 @@ def p(text):
 @login_required
 def index(request):
 
+    if "load" in request.GET:
+        
+        i = [
+            ["Alcoholic Beverages", 1.79, 1.78, 78.90, "Taken from Poore and Nemececk"],
+            ["Animal fats", 23.88, 87.79, 5605.20, "Taken from Poore and Nemececk"],
+            ["Animal feed", 2.28, 3.66, 722.22, "Taken from Poore and Nemececk (cereals)"],
+            ["Aquatic Products, Other", None, None, None, "Not available"],
+            ["Cereals - Excluding Beer", 2.28, 3.66, 722.22, "Taken from Poore and Nemececk"],
+            ["Eggs", 4.67, 6.27, 577.70, "Taken from Poore and Nemececk"],
+            ["Fish, Seafood", 20.25, 5.69, 3603.35, "Taken from Poore and Nemececk"],
+            ["Fruits - Excluding Wine", 0.85, 1.34, 190.08, "Taken from Poore and Nemececk"],
+            ["Meat", 38.94, 153.77, 1684.82, "Taken from Poore and Nemececk"],
+            ["Milk - Excluding Butter", 3.15, 8.95, 628.20, "Taken from Poore and Nemececk"],
+            ["Miscellaneous", None, None, None, "Not available"],
+            ["Offals", 38.94, 153.77, 1684.82, "Taken from Poore and Nemececk (meat)"],
+            ["Oilcrops", 2.07, 2.09, 88.20, "Taken from Poore and Nemececk"],
+            ["Processed Food", 4.23, 6.64, 628.00, "Taken from Michael Clark et al, 2022 (average of 87 processed foods)"],
+            ["Pulses", 1.39, 11.52, 416.15, "Taken from Poore and Nemececk"],
+            ["Spices", None, None, None, "Not available"],
+            ["Starchy Roots", 0.45, 0.61, 43.75, "Taken from Poore and Nemececk"],
+            ["Stimulants", 37.59, 45.29, 283.25, "Taken from Poore and Nemececk"],
+            ["Sugar & Sweeteners", 2.11, 1.89, 279.27, "Taken from Poore and Nemececk"],
+            ["Treenuts", 1.83, 11.04, 2993.05, "Taken from Poore and Nemececk"],
+            ["Vegetable Oils", 3.16, 12.28, 467.27, "Taken from Michael Clark et al, 2022 (average of olive oil, sunflower oil, rapeseed oil, coconut oil)"],
+            ["Vegetables", 0.91, 0.53, 151.50, "Taken from Poore and Nemececk"],
+        ]
+
+        for each in i:
+            f = FoodGroup.objects.get(name=each[0])
+            f.emissions = each[1]
+            f.land_use = each[2]
+            f.water_use = each[3]
+            f.notes_methodology = each[4]
+            f.save()
+            
+
     context = {
         "menu": "index",
     }
