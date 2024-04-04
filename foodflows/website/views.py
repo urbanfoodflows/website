@@ -74,10 +74,9 @@ def ideal_diet(request, id):
     grouptotals = {}
     percentage = {}  
     for each in ideal:
+        grouptotals[each.id] = 0
         for group in each.foodgroups.all():
             if group.id in totals:
-                if not each.id in grouptotals:
-                    grouptotals[each.id] = 0
                 grouptotals[each.id] += totals[group.id]
         if each.quantity:
             percentage[each.id] = ((grouptotals[each.id]/each.quantity)*100)-100
