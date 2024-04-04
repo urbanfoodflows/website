@@ -17,7 +17,6 @@
         <th>Ideal consumption (g/day)</th>
         <th>Actual consumption (g/day)</th>
         <th>Difference</th>
-        <th>Difference</th>
       <tr>
       {% for each in ideal %}
       <tr>
@@ -28,10 +27,11 @@
         </td>
         <td>{{ each.quantity }}</td>
         <td>{{ totals|get_item:each.id|floatformat:1 }}</td>
-        <td>{% widthratio totals|get_item:each.id each.quantity 100 %}</td>
         <td>
         {% if percentage|get_item:each.id %}
           {% if percentage|get_item:each.id > 0 %}+{% endif %}{{ percentage|get_item:each.id|floatformat:0 }}%
+        {% elif totals|get_item:each.id > 0 %}
+          +{{ totals|get_item:each.id|floatformat:1 }} g
         {% endif %}
         </td>
       </tr>
