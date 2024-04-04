@@ -87,43 +87,8 @@
   </div>
 
 <div class="col-3 p-3 text-white bg-dark">
-
-    <h2>{{ info }}</h2>
-    {% if info.image %}
-      <img src="{{ info.image.url }}" class="img-thumbnail" />
-    {% endif %}
-
-    <hr>
-    <ul class="nav nav-pills flex-column mb-auto">
-      <li class="nav-item">
-        <a href="#" data-id="description" class="showdiv nav-link active text-white" aria-current="page">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"></use></svg>
-          Data description
-        </a>
-      </li>
-      {% if info.get_file %}
-      <li>
-        <a href="{{ info.get_file.file.url }}" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"></use></svg>
-          Download data
-        </a>
-      </li>
-      {% endif %}
-      <li>
-        <a href="#" data-id="dqi" class="showdiv nav-link text-white">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
-          Data quality indicators
-        </a>
-      </li>
-      <li>
-        <a href="https://f151cf6f.us2a.app.preset.io/superset/dashboard/9/" class="nav-link text-white">
-          <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
-          Go to data dashboard
-        </a>
-      </li>
-    </ul>
-    <hr>
-  </div>
+  {% include "_menu.city.html" %}
+</div>
 
 </div>
 

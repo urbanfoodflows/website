@@ -7,6 +7,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 import pandas as pd
 import numpy as np
+from django.db.models import Sum, OuterRef, Subquery
 
 # Quick debugging, sometimes it's tricky to locate the PRINT in all the Django
 # output in the console, so just using a simply function to highlight it better
@@ -17,42 +18,6 @@ def p(text):
 
 @login_required
 def index(request):
-
-    if "load" in request.GET:
-        
-        i = [
-            ["Alcoholic Beverages", 1.79, 1.78, 78.90, "Taken from Poore and Nemececk"],
-            ["Animal fats", 23.88, 87.79, 5605.20, "Taken from Poore and Nemececk"],
-            ["Animal feed", 2.28, 3.66, 722.22, "Taken from Poore and Nemececk (cereals)"],
-            ["Aquatic Products, Other", None, None, None, "Not available"],
-            ["Cereals - Excluding Beer", 2.28, 3.66, 722.22, "Taken from Poore and Nemececk"],
-            ["Eggs", 4.67, 6.27, 577.70, "Taken from Poore and Nemececk"],
-            ["Fish, Seafood", 20.25, 5.69, 3603.35, "Taken from Poore and Nemececk"],
-            ["Fruits - Excluding Wine", 0.85, 1.34, 190.08, "Taken from Poore and Nemececk"],
-            ["Meat", 38.94, 153.77, 1684.82, "Taken from Poore and Nemececk"],
-            ["Milk - Excluding Butter", 3.15, 8.95, 628.20, "Taken from Poore and Nemececk"],
-            ["Miscellaneous", None, None, None, "Not available"],
-            ["Offals", 38.94, 153.77, 1684.82, "Taken from Poore and Nemececk (meat)"],
-            ["Oilcrops", 2.07, 2.09, 88.20, "Taken from Poore and Nemececk"],
-            ["Processed Food", 4.23, 6.64, 628.00, "Taken from Michael Clark et al, 2022 (average of 87 processed foods)"],
-            ["Pulses", 1.39, 11.52, 416.15, "Taken from Poore and Nemececk"],
-            ["Spices", None, None, None, "Not available"],
-            ["Starchy Roots", 0.45, 0.61, 43.75, "Taken from Poore and Nemececk"],
-            ["Stimulants", 37.59, 45.29, 283.25, "Taken from Poore and Nemececk"],
-            ["Sugar & Sweeteners", 2.11, 1.89, 279.27, "Taken from Poore and Nemececk"],
-            ["Treenuts", 1.83, 11.04, 2993.05, "Taken from Poore and Nemececk"],
-            ["Vegetable Oils", 3.16, 12.28, 467.27, "Taken from Michael Clark et al, 2022 (average of olive oil, sunflower oil, rapeseed oil, coconut oil)"],
-            ["Vegetables", 0.91, 0.53, 151.50, "Taken from Poore and Nemececk"],
-        ]
-
-        for each in i:
-            f = FoodGroup.objects.get(name=each[0])
-            f.emissions = each[1]
-            f.land_use = each[2]
-            f.water_use = each[3]
-            f.notes_methodology = each[4]
-            f.save()
-            
 
     context = {
         "menu": "index",
@@ -78,6 +43,54 @@ def city(request, id):
     }
 
     return render(request, "city.html", context)
+
+@login_required
+def ideal_diet(request, id):
+
+
+    if False:
+
+        newest = Comment.objects.filter(post=OuterRef("pk")).order_by("-created_at")
+        Post.objects.annotate(newest_commenter_email=Subquery(newest.values("email")[:1]))
+
+        posts = Post.objects.filter(published_at__gte=one_day_ago)
+        Comment.objects.filter(post__in=Subquery(posts.values("pk")))
+
+
+    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
+    consumption = Data.objects.filter(city_id=id, sankey=True, target__name="Consumption") \
+        .values("food_group", "year").annotate(Sum("quantity")).annotate(population=Subquery(population.values("population")[:1])).order_by()
+
+
+    ideal = IdealConsumption.objects.all()
+
+    totals = {}
+    for each in consumption:
+        quantity = each["quantity__sum"]
+        foodgroup = each["food_group"]
+        population = each["population"]
+        totals[foodgroup] = quantity/population*1000*1000/365 # from t per year to g per day
+
+    grouptotals = {}
+    percentage = {}  
+    for each in ideal:
+        for group in each.foodgroups.all():
+            if group.id in totals:
+                if not each.id in grouptotals:
+                    grouptotals[each.id] = 0
+                grouptotals[each.id] += totals[group.id]
+        if each.quantity:
+            percentage[each.id] = ((grouptotals[each.id]/each.quantity)*100)-100
+
+    context = {
+        "info": City.objects.get(pk=id),
+        "ideal": ideal,
+        "menu": "idealdiet",
+        "totals": grouptotals,
+        "percentage": percentage,
+    }
+
+    return render(request, "data/diet.html", context)
 
 @login_required
 def controlpanel(request):
