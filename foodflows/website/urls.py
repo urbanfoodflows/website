@@ -13,4 +13,6 @@ urlpatterns = [
     path("controlpanel/file/<int:id>/", views.controlpanel_file, name="controlpanel_file"),
     path("controlpanel/activities/", views.controlpanel_activities, name="controlpanel_activities"),
     path("controlpanel/foodgroups/", views.controlpanel_foodgroups, name="controlpanel_foodgroups"),
+
+    path("chart/", views.chart, name="chart"),
 ]

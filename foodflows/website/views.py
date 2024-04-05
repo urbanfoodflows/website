@@ -92,6 +92,23 @@ def ideal_diet(request, id):
     return render(request, "data/diet.html", context)
 
 @login_required
+def chart(request):
+
+    context = {
+        "menu": "index",
+        "google_charts": True,
+    }
+
+    return render(request, "chart.html", context)
+
+
+# 
+#
+#  CONTROL PANEL
+#
+#
+
+@login_required
 def controlpanel(request):
     context = {
         "controlpanel": True,
