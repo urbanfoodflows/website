@@ -5,7 +5,8 @@ from . import views
 urlpatterns = [
     path("", views.index, name="index"),
     path("cities/<int:id>/", views.city, name="city"),
-    path("cities/<int:id>/diet/", views.ideal_diet, name="ideal_diet"),
+    path("data/diet/", views.ideal_diet, name="ideal_diet"),
+    path("data/diet/chart/", views.ideal_diet, {"page": "chart"}, name="ideal_diet_chart"),
     path("controlpanel/", views.controlpanel, name="controlpanel"),
     path("controlpanel/city/<int:id>/", views.controlpanel_city, name="controlpanel_city"),
     path("controlpanel/city/<int:city>/datadescriptions/", views.controlpanel_datadescription, name="controlpanel_datadescription"),

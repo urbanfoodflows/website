@@ -1,39 +1,33 @@
-<h2>{{ info }}</h2>
-{% if info.image %}
-  <img src="{{ info.image.url }}" class="img-thumbnail" />
-{% endif %}
-
-<hr>
 <ul class="nav nav-pills flex-column mb-auto">
   <li class="nav-item">
-    <a href="{% url "city" info.id %}" data-id="description" class="showdiv nav-link {% if not menu %}active{% endif %} text-white" aria-current="page">
-      <svg class="bi me-2" width="16" height="16"><use xlink:href="#home"></use></svg>
+    <a href="#" data-id="description" class="showdiv nav-link {% if not menu %}active{% endif %}" aria-current="page">
+      <i class="bi bi-arrow-right-circle"></i>
       Data description
     </a>
   </li>
-  {% if info.get_file %}
+  {% if False and info.get_file %}
   <li>
-    <a href="{{ info.get_file.file.url }}" class="nav-link text-white">
-      <svg class="bi me-2" width="16" height="16"><use xlink:href="#speedometer2"></use></svg>
+    <a href="{{ info.get_file.file.url }}" class="nav-link">
+      <i class="bi bi-arrow-right-circle"></i>
       Download data
     </a>
   </li>
   {% endif %}
   <li>
-    <a href="#" data-id="dqi" class="showdiv nav-link text-white">
-      <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
+    <a href="#" data-id="dqi" class="showdiv nav-link">
+      <i class="bi bi-arrow-right-circle"></i>
       Data quality indicators
     </a>
   </li>
   <li>
-    <a href="{% url "ideal_diet" info.id %}" class="nav-link text-white {% if menu == "idealdiet" %}active{% endif %}">
-      <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
+    <a href="{% url "ideal_diet" %}" class="nav-link {% if submenu == "idealdiet" %}active{% endif %}">
+      <i class="bi bi-arrow-right-circle"></i>
       Ideal diet analysis
     </a>
   </li>
   <li>
-    <a href="https://f151cf6f.us2a.app.preset.io/superset/dashboard/9/" class="nav-link text-white">
-      <svg class="bi me-2" width="16" height="16"><use xlink:href="#table"></use></svg>
+    <a href="https://f151cf6f.us2a.app.preset.io/superset/dashboard/9/" class="nav-link">
+      <i class="bi bi-arrow-right-circle"></i>
       Go to data dashboard
     </a>
   </li>

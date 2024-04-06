@@ -45,51 +45,76 @@ def city(request, id):
     return render(request, "city.html", context)
 
 @login_required
-def ideal_diet(request, id):
+def ideal_diet(request, page="table"):
 
-
-    if False:
-
-        newest = Comment.objects.filter(post=OuterRef("pk")).order_by("-created_at")
-        Post.objects.annotate(newest_commenter_email=Subquery(newest.values("email")[:1]))
-
-        posts = Post.objects.filter(published_at__gte=one_day_ago)
-        Comment.objects.filter(post__in=Subquery(posts.values("pk")))
-
+    if not "cities" in request.GET:
+        cities = City.objects.filter(is_active=True)
 
     population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
-    consumption = Data.objects.filter(city_id=id, sankey=True, target__name="Consumption") \
-        .values("food_group", "year").annotate(Sum("quantity")).annotate(population=Subquery(population.values("population")[:1])).order_by()
+    consumption = Data.objects.filter(city__in=cities, sankey=True, target__name="Consumption") \
+        .values("food_group", "year", "city").annotate(Sum("quantity")).annotate(population=Subquery(population.values("population")[:1])).order_by()
 
 
     ideal = IdealConsumption.objects.all()
 
+    grouptotals = {}
+    percentage = {}  
     totals = {}
+    for city in cities:
+        grouptotals[city.id] = {}
+        percentage[city.id] = {}
+        totals[city.id] = {}
+
+    errors = []
+
     for each in consumption:
         quantity = each["quantity__sum"]
         foodgroup = each["food_group"]
         population = each["population"]
-        totals[foodgroup] = quantity/population*1000*1000/365 # from t per year to g per day
+        city = each["city"]
+        if population:
+            totals[city][foodgroup] = quantity/population*1000*1000/365 # from t per year to g per day
+        else:
+            totals[city][foodgroup] = 0
+            e = f"Not all population data is available - incomplete data for city #{city}. Removing this city from the list..."
+            if e not in errors:
+                errors.append(e)
+            cities = cities.exclude(pk=city)
 
-    grouptotals = {}
-    percentage = {}  
+    if errors:
+        for each in errors:
+            messages.warning(request, each)
+
     for each in ideal:
-        grouptotals[each.id] = 0
-        for group in each.foodgroups.all():
-            if group.id in totals:
-                grouptotals[each.id] += totals[group.id]
-        if each.quantity:
-            percentage[each.id] = ((grouptotals[each.id]/each.quantity)*100)-100
+        for city in cities:
+            grouptotals[city.id][each.id] = 0
+            for group in each.foodgroups.all():
+                if group.id in totals[city.id]:
+                    grouptotals[city.id][each.id] += totals[city.id][group.id]
+            if each.quantity:
+                percentage[city.id][each.id] = ((grouptotals[city.id][each.id]/each.quantity)*100)-100
 
     context = {
-        "info": City.objects.get(pk=id),
         "ideal": ideal,
-        "menu": "idealdiet",
         "totals": grouptotals,
         "percentage": percentage,
+        "cities": cities,
+        "menu": "data",
+        "submenu": "idealdiet",
+        "page": page,
+        "google_charts": True if page == "chart" else False,
     }
 
-    return render(request, "data/diet.html", context)
+    if "load" in request.GET:
+        for each in ideal:
+            name = ""
+            for g in each.foodgroups.all():
+                name += g.name + ", "
+            name = name[:-2]
+            each.name = name
+            each.save()
+
+    return render(request, f"data/diet.{page}.html", context)
 
 @login_required
 def chart(request):

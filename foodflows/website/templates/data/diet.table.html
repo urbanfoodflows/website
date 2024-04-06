@@ -1,0 +1,73 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+
+{% block title %}Ideal Diet Analysis{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+  <div class="bg-body-tertiary mb-3">
+    <ul class="nav nav-pills mb-auto text-center">
+      <li class="nav-item">
+        <a href="#" title="Table" class="nav-link active py-3 border-bottom rounded-0">
+          <i class="bi bi-table"></i>
+        </a>
+      </li>
+      <li>
+        <a href="#" title="Charts" class="nav-link py-3 border-bottom rounded-0">
+          <i class="bi bi-bar-chart-fill"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+    <h2>Ideal Diet Analysis</h2>
+
+    <table class="table table-striped">
+      <tr>
+        <th colspan="2"></th>
+        {% for city in cities %}
+          <th colspan="2">{{ city }}</th>
+        {% endfor %}
+      <tr>
+      <tr>
+        <th>Food Group</th>
+        <th>Ideal (g/day)</th>
+        {% for city in cities %}
+          <th>Actual (g/day)</th>
+          <th>Difference</th>
+        {% endfor %}
+      <tr>
+      {% for each in ideal %}
+        <tr>
+          <td>
+            {{ each }}
+          </td>
+          <td>{{ each.quantity }}</td>
+          {% for city in cities %}
+            <td>{{ totals|get_item:city.id|get_item:each.id|floatformat:1 }}</td>
+            <td>
+            {% if percentage|get_item:city.id|get_item:each.id %}
+              {% if percentage|get_item:city.id|get_item:each.id > 0 %}+{% endif %}{{ percentage|get_item:city.id|get_item:each.id|floatformat:0 }}%
+            {% elif totals|get_item:city.id|get_item:each.id > 0 %}
+              +{{ totals|get_item:city.id|get_item:each.id|floatformat:1 }} g
+            {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+    
+
+  </div>
+
+</div>
+
+{% endblock %}

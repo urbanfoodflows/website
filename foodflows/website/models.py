@@ -12,6 +12,7 @@ class City(models.Model):
     description = MDTextField(null=True, blank=True)
     dashboard_link = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(db_index=True, default=True)
+    color = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -52,6 +53,7 @@ class FoodGroup(models.Model):
     water_use = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Average of Freshwater withdrawals per kilogram (liters)")
     notes_methodology = models.TextField(null=True, blank=True)
     ideal_consumption = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Ideal per capita consumption (g/day)")
+    color = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -61,11 +63,12 @@ class FoodGroup(models.Model):
         db_table = "foodgroups"
 
 class IdealConsumption(models.Model):
+    name = models.CharField(max_length=255, null=True, blank=True)
     quantity = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Ideal per capita consumption (g/day)")
     foodgroups = models.ManyToManyField(FoodGroup)
 
     def __str__(self):
-        return f"{self.quantity} - item {self.id}"
+        return self.name
 
     class Meta:
         ordering = ["id"]
