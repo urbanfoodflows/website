@@ -2,6 +2,12 @@
 
 {% block title %}Food groups{% endblock %}
 
+{% block header %}
+<style type="text/css">
+table span{display:inline-block;width:20px;height:20px;position:relative;top:5px;}
+</style>
+{% endblock %}
+
 {% block content %}
 
 <h1>Food groups</h1>
@@ -18,7 +24,9 @@
     </tr>
     {% for each in foodgroups %}
       <tr>
-        <td><strong>{{ each }}</strong>
+        <td>
+        <span style="background:{{ each.color }}"></span>
+        <strong>{{ each }}</strong>
         <br>
         {{ each.description|linebreaksbr }}
         </td>
