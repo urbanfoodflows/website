@@ -1,0 +1,141 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+{% load humanize %}
+
+{% block title %}Food Production Comparison{% endblock %}
+
+{% block header %}
+
+<script>
+$(function(){
+
+  var sum = 0;
+  $(".qty").each(function(){
+    var text = $(this).text().replace(/,/g, ''); // Remove commas
+    if (!isNaN(text)) {
+      sum += parseFloat(text);
+    }
+  });
+
+  $("#total").text(sum.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }));
+
+  var per_capita_sum = 0;
+  $(".per_capita").each(function(){
+    var value = parseFloat($(this).text());
+    if (!isNaN(value)) {
+      per_capita_sum += value;
+    }
+  });
+  $("#per_capita_total").text(per_capita_sum.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+});
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    <h2>Data search</h2>
+
+    <form class="mb-3">
+      <select class="form-control mb-2" name="cities" multiple required>
+        {% for each in CITIES %}
+          <option value="{{ each.id }}" {% if each in cities %}selected{% endif %}>{{ each }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="foodgroups" class="form-control mb-2" multiple>
+        {% for each in foodgroups %}
+          <option value="{{ each.id }}" {% if each.id|slugify in request.GET.foodgroups %}selected{% endif %}>{{ each }}</option>
+        {% endfor %}
+      </select>
+
+      <div class="row">
+
+        <div class="col-auto">
+          <select name="type" class="form-control">
+            <option value="source" {% if request.GET.type == "source" %}selected{% endif %}>Source</option>
+            <option value="target" {% if request.GET.type == "target" %}selected{% endif %}>Target</option>
+          </select>
+        </div>
+        <div class="col-auto">
+          <select name="activity" class="form-control">
+            {% for each in activities %}
+              <option value="{{ each }}" {% if each.name == request.GET.activity %}selected{% endif %}>{{ each }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-auto">
+          <select name="sankey" class="form-control">
+            <option value="true" {% if request.GET.sankey == "true" %}selected{% endif %}>Sankey data only</option>
+            <option value="" {% if not request.GET.sankey %}selected{% endif %}>All data</option>
+          </select>
+        </div>
+      </div>
+
+      <br>
+      <button class="btn btn-success" type="submit">Search</button>
+
+    </form>
+
+    <hr>
+
+    {% if request.GET %}
+
+      <table class="table table-striped datatable">
+        
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>City</th>
+            <th>Source</th>
+            <th>Target</th>
+            <th>Food</th>
+            <th>Food Group</th>
+            <th>Quantity (t)</th>
+            <th>Per-capita (kg)</th>
+            <th>Sankey</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for each in data %}
+          <tr>
+            <td>{{ each.year }}</td>
+            <td>{{ each.city }}</td>
+            <td>{{ each.source }}</td>
+            <td>{{ each.target }}</td>
+            <td>{{ each.food }}</td>
+            <td>{{ each.food_group }}</td>
+            <td class="qty">{{ each.quantity|intcomma }}</td>
+            <td class="per_capita">{{ each.per_capita|floatformat:2 }}</td>
+            <td>{{ each.sankey }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+        <tfoot>
+          <tr>
+            <th colspan="6">TOTAL (all entries)</th>
+            <th><span id="total"></span></th>
+            <th><span id="per_capita_total"></span></th>
+            <th></th>
+         </tr>
+        </tfoot>
+
+      </table>
+
+    {% endif %}
+
+  </div>
+
+</div>
+
+{% endblock %}

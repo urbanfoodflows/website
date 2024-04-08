@@ -1,0 +1,94 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+
+{% block title %}Food Production Comparison{% endblock %}
+
+{% block header %}
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+    <style>
+        /* Set the size of the chart container */
+        .chart div {
+            width: 100%;
+            height: 600px;
+            margin: 0 auto;
+        }
+    </style>
+{% endblock %}
+
+{% block footer %}
+
+    <script>
+        {% for each in cities %}
+        // Initialize ECharts instance
+        var chart_{{ each.id }} = echarts.init(document.getElementById('chart_{{ each.id }}'));
+
+        // Define data for the treemap with sub-items
+        var data_{{ each.id }} = [
+            {% for key in totals|get_item:each.id %}
+            {
+                name: '{{ key }}',
+                itemStyle: { color: '{{ colors|get_item:key }}' }, // Custom color for Group 1
+                children: [
+                    {% for food in totals|get_item:each.id|get_item:key %}
+                    { name: '{{ food }}', value: {{ totals|get_item:each.id|get_item:key|get_item:food }} },
+                    {% endfor %}
+                ]
+            },
+            {% endfor %}
+        ];
+
+        // Configure the treemap chart
+        var options_{{ each.id }} = {
+            title: {
+                text: 'Total production (t) - {{ each }}'
+            },
+            series: [{
+                type: 'treemap',
+                data: data_{{each.id }}
+            }]
+        };
+
+        // Set options and render the chart
+        chart_{{ each.id }}.setOption(options_{{ each.id }});
+
+        // Function to handle download button click
+        document.getElementById('download_{{ each.id }}').onclick = function() {
+            // Download chart image
+            chart_{{ each.id }}.convertToImage({type: 'png'}).download('treemap_chart');
+        };
+        {% endfor %}
+    </script>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    {% include "data/_topmenu.production.html" %}
+
+    <h2>Food Production Comparison</h2>
+
+    {% for each in cities %}
+
+      <div class="chart">
+        <h4>{{ each }}</h4>
+        <div id="chart_{{ each.id }}"></div>
+        <a id="download_{{ each.id }}" title="Download" class="png"><i class="bi bi-download"></i></a>
+      </div>
+
+    {% endfor %}
+
+
+
+  </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+{% load humanize %}
+
+{% block title %}Food Production Comparison{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    {% include "data/_topmenu.production.html" %}
+
+    <h2>Food Production</h2>
+
+    <table class="table table-striped">
+      <tr>
+        <th></th>
+        {% for city in cities %}
+          <th colspan="2">{{ city }}</th>
+        {% endfor %}
+      <tr>
+      <tr>
+        <th>Food Group</th>
+        {% for city in cities %}
+          <th>Total</th>
+          <th>Per-capita</th>
+        {% endfor %}
+      <tr>
+      {% for each in foodgroups %}
+        <tr>
+          <td>
+            {{ each }}
+          </td>
+          {% for city in cities %}
+            {% if totals|get_item:city.id|get_item:each.id %}
+            <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals|get_item:city.id|get_item:each.id|intcomma }} t</a></td>
+            <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ per_capita|get_item:city.id|get_item:each.id|floatformat:1 }} kg</a></td>
+            {% else %}
+              <td colspan="2"></td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+    
+
+  </div>
+
+</div>
+
+{% endblock %}

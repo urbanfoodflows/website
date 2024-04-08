@@ -1,6 +1,6 @@
 <div class="cities">
   <h4>Cities</h4>
-  <ul class="list-unstyled ms-3" data-bs-toggle="modal" data-bs-target="#cityModal">
+  <ul class="list-unstyled ms-3" {% if not disable_city_picker %} data-bs-toggle="modal" data-bs-target="#cityModal"{% endif %}>
   {% for each in CITIES %}
     <li class="list-group-item text-{% if each in cities %}success fw-bold{% else %}secondary{% endif %}">
       <i class="bi bi-{% if each in cities %}check-circle-fill{% else %}circle{% endif %}"></i>
@@ -61,6 +61,18 @@
     <a href="{% url "ideal_diet_chart" %}" class="nav-link {% if submenu == "idealdiet" %}active{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Ideal diet analysis
+    </a>
+  </li>
+  <li>
+    <a href="{% url "production" %}" class="nav-link {% if submenu == "production" %}active{% endif %}">
+      <i class="bi bi-arrow-right-circle"></i>
+      Production
+    </a>
+  </li>
+  <li>
+    <a href="{% url "data_table" %}" class="nav-link {% if submenu == "data_table" %}active{% endif %}">
+      <i class="bi bi-arrow-right-circle"></i>
+      Data search
     </a>
   </li>
 </ul>

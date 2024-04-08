@@ -7,7 +7,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 import pandas as pd
 import numpy as np
-from django.db.models import Sum, OuterRef, Subquery
+from django.db.models import Sum, OuterRef, Subquery, FloatField, ExpressionWrapper, F
+from django.db.models.expressions import RawSQL
 
 # Quick debugging, sometimes it's tricky to locate the PRINT in all the Django
 # output in the console, so just using a simply function to highlight it better
@@ -43,6 +44,167 @@ def city(request, id):
     }
 
     return render(request, "city.html", context)
+
+@login_required
+def data_table(request):
+
+    if "cities" in request.GET:
+        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
+    else:
+        cities = City.objects.filter(is_active=True)
+
+    data = Data.objects.filter(city__in=cities)
+
+    if request.GET.get("sankey"):
+        data = data.filter(sankey=True)
+
+    if request.GET.get("foodgroups"):
+        data = data.filter(food_group__in=request.GET.getlist("foodgroups"))
+
+    if request.GET.get("activity"):
+        activity = Activity.objects.get(name=request.GET["activity"])
+        if request.GET["type"] == "target":
+            data = data.filter(target=activity)
+        elif request.GET["type"] == "source":
+            data = data.filter(source=activity)
+        else:
+            messages.warning("You did not specify source/target filter, please add this filter.")
+
+    # Define a FloatField for the per_capita annotation, otherwise these figures are integers
+    per_capita_field = FloatField()
+
+    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
+    data = data.annotate(population=Subquery(population.values("population")[:1]))
+    data = data.annotate(per_capita=ExpressionWrapper(
+        F("quantity") * 1000.0 / F("population"),
+        output_field=per_capita_field
+    ))
+
+    context = {
+        "cities": cities,
+        "foodgroups": FoodGroup.objects.all(),
+        "activities": Activity.objects.all(),
+        "data": data,
+        "disable_city_picker": True,
+        "menu": "data",
+        "submenu": "data_table",
+    }
+
+    return render(request, "data/table.html", context)
+
+@login_required
+def production(request, page="table"):
+
+    if "cities" in request.GET:
+        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
+    else:
+        cities = City.objects.filter(is_active=True)
+
+    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
+    production = Data.objects.filter(city__in=cities, sankey=True, source__name="Production") \
+        .values("food_group", "year", "city").annotate(Sum("quantity")).annotate(population=Subquery(population.values("population")[:1])).order_by()
+
+    totals = {}
+    per_capita = {}
+    for city in cities:
+        per_capita[city.id] = {}
+        totals[city.id] = {}
+
+    errors = []
+
+    for each in production:
+        quantity = each["quantity__sum"]
+        foodgroup = each["food_group"]
+        population = each["population"]
+        city = each["city"]
+        if population:
+            totals[city][foodgroup] = quantity
+            per_capita[city][foodgroup] = quantity/population*1000 #kg instead of t
+        else:
+            totals[city][foodgroup] = 0
+            per_capita[city][foodgroup] = 0
+            e = f"Not all population data is available - incomplete data for city #{city}. Removing this city from the list..."
+            if e not in errors:
+                errors.append(e)
+            cities = cities.exclude(pk=city)
+
+    if errors:
+        for each in errors:
+            messages.warning(request, each)
+
+    context = {
+        "totals": totals,
+        "per_capita": per_capita,
+        "cities": cities,
+        "menu": "data",
+        "submenu": "production",
+        "page": page,
+        "foodgroups": FoodGroup.objects.all(),
+        "google_charts": False if page == "table" else True,
+    }
+
+    return render(request, f"data/production.{page}.html", context)
+
+@login_required
+def production_overview(request):
+
+    if "cities" in request.GET:
+        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
+    else:
+        cities = City.objects.filter(is_active=True)
+
+    population_query = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
+    production = Data.objects.filter(sankey=True, city__in=cities, source__name="Production") \
+        .filter(quantity__gt=0) \
+        .annotate(population=Subquery(population_query.values("population")[:1]))
+
+    totals = {}
+    per_capita = {}
+    colors = {}
+    for city in cities:
+        per_capita[city.id] = {}
+        totals[city.id] = {}
+
+    errors = []
+
+    for each in production:
+        quantity = each.quantity
+        foodgroup = each.food_group.name
+        food = each.food
+        population = each.population
+        city = each.city.id
+        if foodgroup not in totals[city]:
+            totals[city][foodgroup] = {}
+            per_capita[city][foodgroup] = {}
+            colors[foodgroup] = each.food_group.color
+        if population:
+            totals[city][foodgroup][food] = quantity
+            per_capita[city][foodgroup][food] = quantity/population*1000 #kg instead of t
+        else:
+            totals[city][foodgroup] = 0
+            per_capita[city][foodgroup] = 0
+            e = f"Not all population data is available - incomplete data for city #{city}. Removing this city from the list..."
+            if e not in errors:
+                errors.append(e)
+            cities = cities.exclude(pk=city)
+
+    if errors:
+        for each in errors:
+            messages.warning(request, each)
+
+    context = {
+        "totals": totals,
+        "per_capita": per_capita,
+        "cities": cities,
+        "menu": "data",
+        "submenu": "production",
+        "page": "overview",
+        "foodgroups": FoodGroup.objects.all(),
+        "colors": colors,
+    }
+
+    return render(request, f"data/production.overview.html", context)
+
 
 @login_required
 def ideal_diet(request, page="table"):

@@ -1,0 +1,96 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+
+{% block title %}Food Production Comparison{% endblock %}
+
+{% block header %}
+<script type="text/javascript">
+
+  google.charts.load('current', {'packages':['corechart', 'bar']});
+  google.charts.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+
+      var data = google.visualization.arrayToDataTable([
+        ['City', {% for city in cities %}'{{ city }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        {% for each in foodgroups %}
+          ['{{ each|safe }}', {% for city in cities %}{% if totals|get_item:city.id|get_item:each.id %}{{ totals|get_item:city.id|get_item:each.id }}{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
+        {% endfor %}
+      ]);
+
+      var options = {
+        hAxis: {
+          title: 'Production (tons)'
+        },
+        vAxis: {
+          title: 'Food group'
+        },
+        title: 'Total food production by food group (tons)',
+        bars: 'horizontal',
+        colors: [{% for city in cities %}'{{ city.color }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        chartArea:{top:40, bottom:80}
+      };
+      var chart = new google.visualization.BarChart(document.getElementById('chart'));
+      chart.draw(data, options);
+
+      $("#download").attr("href", chart.getImageURI());
+
+      var data_per_capita = google.visualization.arrayToDataTable([
+        ['City', {% for city in cities %}'{{ city }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        {% for each in foodgroups %}
+          ['{{ each|safe }}', {% for city in cities %}{% if per_capita|get_item:city.id|get_item:each.id %}{{ per_capita|get_item:city.id|get_item:each.id }}{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
+        {% endfor %}
+      ]);
+
+      var options_per_capita = {
+        hAxis: {
+          title: 'Production (kg per capita)'
+        },
+        vAxis: {
+          title: 'Food group'
+        },
+        title: 'Total food production by food group (kg per capita)',
+        bars: 'horizontal',
+        colors: [{% for city in cities %}'{{ city.color }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        chartArea:{top:40, bottom:80}
+      };
+      var chart_per_capita = new google.visualization.BarChart(document.getElementById('chart_per_capita'));
+      chart_per_capita.draw(data_per_capita, options_per_capita);
+
+      $("#download_per_capita").attr("href", chart.getImageURI());
+
+  }
+
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    {% include "data/_topmenu.production.html" %}
+
+    <h2>Food Production Comparison</h2>
+
+    <div class="chart">
+      <span id='chart' style='width: 100%; height: 1250px; display: inline-block'></span>
+      <a id="download" title="Download" class="png"><i class="bi bi-download"></i></a>
+    </div>
+
+    <div class="chart">
+      <span id='chart_per_capita' style='width: 100%; height: 1250px; display: inline-block'></span>
+      <a id="download_per_capita" title="Download" class="png"><i class="bi bi-download"></i></a>
+    </div>
+
+
+  </div>
+
+</div>
+
+{% endblock %}
