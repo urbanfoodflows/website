@@ -16,6 +16,8 @@ urlpatterns = [
     path("data/production/table/", views.production, {"page": "table"}, name="production_table"),
     path("data/production/comparison/", views.production, {"page": "comparison"}, name="production_comparison"),
     path("data/table/", views.data_table, name="data_table"),
+    path("data/", views.data, name="data"),
+    path("data/city/<int:id>/", views.data_city, name="data_city"),
 
     path("controlpanel/", views.controlpanel, name="controlpanel"),
     path("controlpanel/city/<int:id>/", views.controlpanel_city, name="controlpanel_city"),

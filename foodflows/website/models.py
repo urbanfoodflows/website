@@ -125,7 +125,7 @@ class Data(models.Model):
     def quantity_per_capita(self):
         try:
             population = Population.objects.get(city_id=self.city_id, year=self.year)
-            return self.quantity/population.population
+            return self.quantity/population.population*1000
         except:
             return None
 

@@ -46,6 +46,64 @@ def city(request, id):
     return render(request, "city.html", context)
 
 @login_required
+def data(request):
+
+    if "cities" in request.GET:
+        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
+    else:
+        cities = City.objects.filter(is_active=True)
+
+    context = {
+        "cities": cities,
+        "menu": "data",
+        "submenu": "homepage",
+    }
+
+    return render(request, "data/index.html", context)
+
+@login_required
+def data_city(request, id):
+
+    city = City.objects.get(is_active=True, pk=id)
+
+    foodsupply = Data.objects.filter(city=city, sankey=True, source__name="Food supply") \
+        .values("food_group__name","food_group__color").annotate(total=Sum("quantity"))
+
+    per_capita_field = FloatField() # Define a FloatField for the per_capita annotation, otherwise these figures are integers
+    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
+    foodsupply = foodsupply.annotate(population=Subquery(population.values("population")[:1]))
+    foodsupply = foodsupply.annotate(per_capita=ExpressionWrapper(
+        F("total") * 1000.0 / F("population"),
+        output_field=per_capita_field
+    ))
+    if foodsupply:
+        foodsupply = foodsupply.order_by("-per_capita")[:10]
+
+    # Getting the TOTAL food supply (single figure). We show it in the middle of the pie chart
+    # and we can use it to calculate the OTHER slice in the pie chart
+    foodsupply_total = Data.objects.filter(city=city, sankey=True, source__name="Food supply")
+    foodsupply_total = foodsupply_total.aggregate(
+        per_capita=ExpressionWrapper(
+            Sum(F("quantity") * 1000.0 / Subquery(population.values("population")[:1])),
+            output_field=FloatField()
+        )
+    )
+
+    context = {
+        "city": city,
+        "menu": "data",
+        "submenu": "homepage",
+        "production": Data.objects.filter(sankey=True, city=city, source__name="Production").order_by("-quantity")[:10],
+        "imports": Data.objects.filter(sankey=True, city=city, source__name="Imports").order_by("-quantity")[:10],
+        "table_bars": True,
+        "echarts": True,
+        "foodsupply": foodsupply,
+        "foodsupply_total": foodsupply_total["per_capita"],
+    }
+
+    return render(request, "data/city.html", context)
+
+@login_required
 def data_table(request):
 
     if "cities" in request.GET:
@@ -70,9 +128,7 @@ def data_table(request):
         else:
             messages.warning("You did not specify source/target filter, please add this filter.")
 
-    # Define a FloatField for the per_capita annotation, otherwise these figures are integers
-    per_capita_field = FloatField()
-
+    per_capita_field = FloatField() # Define a FloatField for the per_capita annotation, otherwise these figures are integers
     population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
     data = data.annotate(population=Subquery(population.values("population")[:1]))
     data = data.annotate(per_capita=ExpressionWrapper(
@@ -201,6 +257,7 @@ def production_overview(request):
         "page": "overview",
         "foodgroups": FoodGroup.objects.all(),
         "colors": colors,
+        "echarts": True,
     }
 
     return render(request, f"data/production.overview.html", context)

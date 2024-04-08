@@ -30,6 +30,40 @@
   </script>
 {% endif %}
 
+{% if echarts %}
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+{% endif %}
+
+{% if table_bars %}
+<script>
+$(document).ready(function() {
+    // Find all tables containing bars
+    var tables = $('.table-bars');
+    
+    // Loop through each table
+    tables.each(function() {
+        var numbers = $(this).find('.number'); // Find numbers within the table
+        var highestNumber = 0; // Initialize highest number for this table
+        
+        // Loop through each number in the table to find the highest number
+        numbers.each(function() {
+            var number = parseFloat($(this).text()); // Extract the number inside the element
+            if (number > highestNumber) {
+                highestNumber = number;
+            }
+        });
+        
+        // Loop through each number again to update width
+        numbers.each(function() {
+            var number = parseFloat($(this).text()); // Extract the number inside the element
+            var percentage = (number / highestNumber) * 100; // Calculate percentage
+            $(this).next('.cell-bar').css('width', percentage.toFixed(2) + '%');
+        });
+    });
+});
+</script>
+{% endif %}
+
 {% block header %}{% endblock %}
 <style type="text/css">
 svg#icon{width:100px}
@@ -44,6 +78,15 @@ svg#icon{width:100px}
 }
 .chart{position:relative}
 .png{position:absolute;top:10px;right:10px}
+.table-bars td{position:relative;font-size:11px}
+.cell-bar {
+  position: absolute;
+  height: 100%;
+  display: block;
+  top: 0px;
+  left: 0%;
+  background-color: rgba(0, 0, 0, 0.2);
+}
 
 </style>
 

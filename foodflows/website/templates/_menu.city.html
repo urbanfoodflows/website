@@ -58,19 +58,25 @@
     </a>
   </li>
   <li>
-    <a href="{% url "ideal_diet_chart" %}" class="nav-link {% if submenu == "idealdiet" %}active{% endif %}">
+    <a href="{% url "data" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "homepage" %}active{% endif %}">
+      <i class="bi bi-arrow-right-circle"></i>
+      Data homepage
+    </a>
+  </li>
+  <li>
+    <a href="{% url "ideal_diet_chart" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "idealdiet" %}active{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Ideal diet analysis
     </a>
   </li>
   <li>
-    <a href="{% url "production" %}" class="nav-link {% if submenu == "production" %}active{% endif %}">
+    <a href="{% url "production" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "production" %}active{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Production
     </a>
   </li>
   <li>
-    <a href="{% url "data_table" %}" class="nav-link {% if submenu == "data_table" %}active{% endif %}">
+    <a href="{% url "data_table" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "data_table" %}active{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Data search
     </a>
