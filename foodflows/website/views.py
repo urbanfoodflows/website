@@ -47,8 +47,11 @@ def city(request, id):
 @login_required
 def ideal_diet(request, page="table"):
 
-    if not "cities" in request.GET:
+    if "cities" in request.GET:
+        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
+    else:
         cities = City.objects.filter(is_active=True)
+
 
     population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
     consumption = Data.objects.filter(city__in=cities, sankey=True, target__name="Consumption") \
@@ -85,7 +88,9 @@ def ideal_diet(request, page="table"):
         for each in errors:
             messages.warning(request, each)
 
+    ideals = {} # A dictionary with all the ideal values (ID + quantity)
     for each in ideal:
+        ideals[each.id] = each.quantity
         for city in cities:
             grouptotals[city.id][each.id] = 0
             for group in each.foodgroups.all():
@@ -102,44 +107,9 @@ def ideal_diet(request, page="table"):
         "menu": "data",
         "submenu": "idealdiet",
         "page": page,
-        "google_charts": True if page == "chart" else False,
+        "google_charts": False if page == "table" else True,
+        "ideals": ideals,
     }
-
-    if "load" in request.GET:
-        colors = {
-            "Alcoholic Beverages": "#22385f",
-            "Animal fats": "#ce9e00",
-            "Aquatic Products, Other": "#999a9f",
-            "Cereals - Excluding Beer": "#ffc000",
-            "Eggs": "#d95f0a",
-            "Fish, Seafood": "#868487",
-            "Fruits - Excluding Wine": "#c5e0b5",
-            "Meat": "#873607",
-            "Milk - Excluding Butter": "#e20b1b",
-            "Miscellaneous": "#c9c3cc",
-            "Offals": "#d46013",
-            "Oilcrops": "#b2ce13",
-            "Pulses": "#010002",
-            "Spices": "#632aaf",
-            "Starchy Roots": "#5c9bd1",
-            "Stimulants": "#747577",
-            "Sugar & Sweeteners": "#3b8c93",
-            "Sugar Crops": "#5b96d8",
-            "Treenuts": "#fff2cd",
-            "Vegetable Oils": "#30579a",
-            "Vegetables": "#70a845",
-            "Other (processed foods)": "#e6812f",
-            "Animal feed": "#833182",
-            "Non-food agricultural products": "#d15cd0"
-        }
-        for name,value in colors.items():
-            g = FoodGroup.objects.filter(name=name)
-            if g:
-                g = g[0]
-                g.color = value
-                g.save()
-            else:
-                messages.warning(request, "Not found: " + name)
 
     return render(request, f"data/diet.{page}.html", context)
 

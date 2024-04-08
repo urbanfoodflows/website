@@ -1,0 +1,88 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+
+{% block title %}Ideal Diet Analysis{% endblock %}
+
+{% block header %}
+<script type="text/javascript">
+
+  google.charts.load('current', {'packages':['corechart']});
+  google.charts.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+    var oldData = google.visualization.arrayToDataTable([
+      ['Food group', 'Quantity'],
+      {% for each in ideal %}
+      ['{{ each }}', {{ each.quantity }}],
+      {% endfor %}
+    ]);
+
+    {% for city in cities %}
+    var newData{{ city.id }} = google.visualization.arrayToDataTable([
+      ['Food group', '{{ city }}'],
+      {% for each in ideal %}
+      {% if totals|get_item:city.id|get_item:each.id %}
+      ['{{ each|safe|truncatechars_html:15 }}', {{ totals|get_item:city.id|get_item:each.id }}],
+      {% endif %}
+      {% endfor %}
+    ]);
+    {% endfor %}
+
+    var colChartDiff = new google.visualization.ColumnChart(document.getElementById('colchart_diff'));
+
+    {% for each in cities %}
+      var diff_{{ each.id }} = new google.visualization.BarChart(document.getElementById('diff_{{ each.id }}'));
+    {% endfor %}
+
+    var options = { 
+      legend: { position: 'bottom' }, 
+      title: 'Ideal consumption vs actual consumption (g/day)',
+      chartArea:{top:20, bottom:80}
+    };
+
+    {% for each in cities %}
+    var diffData_{{ each.id }} = colChartDiff.computeDiff(oldData, newData{{ each.id }});
+    diff_{{ each.id }}.draw(diffData_{{ each.id }}, options);
+    {% endfor %}
+
+    $("text").each(function () {
+      if ($(this).text() == "Previous data") {
+        $(this).text("Ideal consumption");
+      }
+    });
+
+  }
+
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    {% include "data/_topmenu.diet.html" %}
+
+    <h2>Ideal Diet Analysis</h2>
+
+    <div hidden>
+      <span id='colchart_diff' style='width: 450px; height: 250px; display: inline-block'></span>
+    </div>
+
+    {% for each in cities %}
+      <div class="mb-4">
+        <h3>{{ each }}</h3>
+        <span id='diff_{{ each.id }}' style='width: 1050px; height: 850px; display: inline-block'></span>
+      </div>
+    {% endfor %}
+
+  </div>
+
+</div>
+
+{% endblock %}
