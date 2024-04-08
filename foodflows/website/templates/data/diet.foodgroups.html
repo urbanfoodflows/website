@@ -28,8 +28,9 @@
         seriesType: 'bars',
         series: {1: {type: 'line'}},
       };
-      var chart = new google.visualization.ComboChart(document.getElementById('chart_{{ each.id }}'));
-      chart.draw(data_{{ each.id }}, options_{{ each.id }});
+      var chart_{{ each.id }} = new google.visualization.ComboChart(document.getElementById('chart_{{ each.id }}'));
+      chart_{{ each.id }}.draw(data_{{ each.id }}, options_{{ each.id }});
+      $("#download_{{ each.id }}").attr("href", chart_{{ each.id }}.getImageURI());
 
     {% endfor %}
 
@@ -53,7 +54,10 @@
     <h2>Ideal Diet Analysis</h2>
 
     {% for each in ideal %}
-      <span id='chart_{{ each.id }}' style='width: 100%; height: 50vh; display: inline-block'></span>
+      <div class="chart">
+        <span id='chart_{{ each.id }}' style='width: 100%; height: 50vh; display: inline-block'></span>
+        <a id="download_{{ each.id }}" title="Download" class="png"><i class="bi bi-download"></i></a>
+      </div>
     {% endfor %}
 
   </div>

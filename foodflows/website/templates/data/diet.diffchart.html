@@ -43,6 +43,7 @@
     {% for each in cities %}
     var diffData_{{ each.id }} = colChartDiff.computeDiff(oldData, newData{{ each.id }});
     diff_{{ each.id }}.draw(diffData_{{ each.id }}, options);
+    $("#download_{{ each.id }}").attr("href", diff_{{each.id }}.getImageURI());
     {% endfor %}
 
     $("text").each(function () {
@@ -75,9 +76,10 @@
     </div>
 
     {% for each in cities %}
-      <div class="mb-4">
+      <div class="mb-4 chart">
         <h3>{{ each }}</h3>
         <span id='diff_{{ each.id }}' style='width: 1050px; height: 850px; display: inline-block'></span>
+        <a id="download_{{ each.id }}" title="Download" class="png"><i class="bi bi-download"></i></a>
       </div>
     {% endfor %}
 

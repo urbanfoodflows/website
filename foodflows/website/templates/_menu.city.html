@@ -19,11 +19,12 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <select class="form-control" name="cities" multiple>
+          <select class="form-control" name="cities" multiple required>
             {% for each in CITIES %}
               <option value="{{ each.id }}" {% if each in cities %}selected{% endif %}>{{ each }}</option>
             {% endfor %}
           </select>
+          <small>Hold CTRL to select multiple cities</small>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
