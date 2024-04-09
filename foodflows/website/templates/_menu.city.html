@@ -2,8 +2,8 @@
   <h4>Cities</h4>
   <ul class="list-unstyled ms-3" {% if not disable_city_picker %} data-bs-toggle="modal" data-bs-target="#cityModal"{% endif %}>
   {% for each in CITIES %}
-    <li class="list-group-item text-{% if each in cities %}success fw-bold{% else %}secondary{% endif %}">
-      <i class="bi bi-{% if each in cities %}check-circle-fill{% else %}circle{% endif %}"></i>
+    <li class="list-group-item text-{% if each in cities or each == city %}success fw-bold{% else %}secondary{% endif %}">
+      <i class="bi bi-{% if each in cities or each == city %}check-circle-fill{% else %}circle{% endif %}"></i>
       {{ each }}
     </li>
   {% endfor %}
@@ -19,12 +19,14 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <select class="form-control" name="cities" multiple required>
+          <select class="form-control" name="cities" {% if not city %}multiple{% endif %} required>
             {% for each in CITIES %}
-              <option value="{{ each.id }}" {% if each in cities %}selected{% endif %}>{{ each }}</option>
+              <option value="{{ each.id }}" {% if each in cities or each == city %}selected{% endif %}>{{ each }}</option>
             {% endfor %}
           </select>
-          <small>Hold CTRL to select multiple cities</small>
+          {% if not city %}
+            <small>Hold CTRL to select multiple cities</small>
+          {% endif %}
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

@@ -37,29 +37,37 @@
 {% if table_bars %}
 <script>
 $(document).ready(function() {
-    // Find all tables containing bars
-    var tables = $('.table-bars');
-    
-    // Loop through each table
-    tables.each(function() {
-        var numbers = $(this).find('.number'); // Find numbers within the table
-        var highestNumber = 0; // Initialize highest number for this table
-        
-        // Loop through each number in the table to find the highest number
-        numbers.each(function() {
-            var number = parseFloat($(this).text()); // Extract the number inside the element
-            if (number > highestNumber) {
-                highestNumber = number;
-            }
-        });
-        
-        // Loop through each number again to update width
-        numbers.each(function() {
-            var number = parseFloat($(this).text()); // Extract the number inside the element
-            var percentage = (number / highestNumber) * 100; // Calculate percentage
-            $(this).next('.cell-bar').css('width', percentage.toFixed(2) + '%');
-        });
+  // Find all tables containing bars
+  var tables = $('.table-bars');
+  
+  // Loop through each table
+  tables.each(function() {
+    var numbers = $(this).find('.number'); // Find numbers within the table
+    var highestNumber = 0; // Initialize highest number for this table
+    var total = 0; // Keep track of the total
+      
+    // Loop through each number in the table to find the highest number
+    numbers.each(function() {
+      var number = parseFloat($(this).data("number")); // Extract the number inside the element
+      total += number;
+      if (number > highestNumber) {
+        highestNumber = number;
+      }
     });
+
+    // Set the total in the bottom row
+    total = total.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    total_cell = $(this).find('tfoot .total');
+    unit = total_cell.data("unit");
+    total_cell.text(total + " " + unit);
+      
+    // Loop through each number again to update width
+    numbers.each(function() {
+      var number = parseFloat($(this).text()); // Extract the number inside the element
+      var percentage = (number / highestNumber) * 100; // Calculate percentage
+      $(this).next('.cell-bar').css('width', percentage.toFixed(2) + '%');
+    });
+  });
 });
 </script>
 {% endif %}
@@ -78,7 +86,9 @@ svg#icon{width:100px}
 }
 .chart{position:relative}
 .png{position:absolute;top:10px;right:10px}
+
 .table-bars td{position:relative;font-size:11px}
+.table-bars-box{max-height:300px;overflow-y: scroll;overflow-x:hidden;clear:both}
 .cell-bar {
   position: absolute;
   height: 100%;
@@ -86,6 +96,28 @@ svg#icon{width:100px}
   top: 0px;
   left: 0%;
   background-color: rgba(0, 0, 0, 0.2);
+}
+.table-bars, .table-bars table {
+  clear: both;
+  width: 100%;
+}
+.table-bars {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-bars.table-sm > :not(caption) > * > * {
+  padding: .1rem .25rem;
+}
+
+.table-bars td:first-child {
+  width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.table-bars a {
+  text-decoration:none;
 }
 
 </style>

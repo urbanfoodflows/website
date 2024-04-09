@@ -2,21 +2,22 @@
 {% load foodflows_extras %}
 {% load humanize %}
 
-{% block title %}Food Production Comparison{% endblock %}
+{% block title %}Food sytem overview: {{ city }}{% endblock %}
 
 {% block footer %}
 <script>
 
-var chartDom = document.getElementById('main');
-var myChart = echarts.init(chartDom);
-var option;
+// First foodsupply chart, based on what enters the food supply
+var foodsupply_dom = document.getElementById('foodsupply');
+var foodsupply_chart = echarts.init(foodsupply_dom);
+var foodsupply_options;
 
 var foodsupply_other = {{ foodsupply_total }};
 {% for each in foodsupply %}
 foodsupply_other -= {{ each.per_capita }};
 {% endfor %}
 
-option = {
+foodsupply_options = {
   title: {
     text: '{{ foodsupply_total|floatformat:0 }} kg/cap',
     left: 'center',
@@ -39,7 +40,78 @@ option = {
   ]
 };
 
-option && myChart.setOption(option);
+foodsupply_options && foodsupply_chart.setOption(foodsupply_options);
+
+// Second foodsupply chart, based on what leaves the food supply
+var foodsupply_exit_dom = document.getElementById('foodsupply_exit');
+var foodsupply_exit_chart = echarts.init(foodsupply_exit_dom);
+var foodsupply_exit_options;
+
+var foodsupply_exit_other = {{ foodsupply_exit_total }};
+{% for each in foodsupply_exit %}
+foodsupply_exit_other -= {{ each.per_capita }};
+{% endfor %}
+
+foodsupply_exit_options = {
+  title: {
+    text: '{{ foodsupply_exit_total|floatformat:0 }} kg/cap',
+    left: 'center',
+    top: 'center'
+  },
+  color: [{% for each in foodsupply_exit %}'{{ each.food_group__color }}',{% endfor %}'black'],
+  series: [
+    {
+      name: 'Food group',
+      type: 'pie',
+      radius: ['40%', '70%'],
+      avoidLabelOverlap: true,
+      data: [
+        {% for each in foodsupply_exit %}
+        { value: {{ each.per_capita|floatformat:1 }}, name: '{{ each.food_group__name|safe }}' },
+        {% endfor %}
+        { value: foodsupply_exit_other, name: 'Other' }
+      ]
+    }
+  ]
+};
+
+foodsupply_exit_options && foodsupply_exit_chart.setOption(foodsupply_exit_options);
+
+// Consumption
+var consumption_dom = document.getElementById('consumption');
+var consumption_chart = echarts.init(consumption_dom);
+var consumption_options;
+
+var consumption_other = {{ consumption_total }};
+{% for each in consumption %}
+consumption_other -= {{ each.per_capita }};
+{% endfor %}
+
+consumption_options = {
+  title: {
+    text: '{{ consumption_total|floatformat:0 }} kg/cap',
+    left: 'center',
+    top: 'center'
+  },
+  color: [{% for each in consumption %}'{{ each.food_group__color }}',{% endfor %}'black'],
+  series: [
+    {
+      name: 'Food group',
+      type: 'pie',
+      radius: ['40%', '70%'],
+      avoidLabelOverlap: true,
+      data: [
+        {% for each in consumption %}
+        { value: {{ each.per_capita|floatformat:1 }}, name: '{{ each.food_group__name|safe }}' },
+        {% endfor %}
+        { value: consumption_other, name: 'Other' }
+      ]
+    }
+  ]
+};
+
+consumption_options && consumption_chart.setOption(consumption_options);
+
 </script>
 {% endblock %}
 
@@ -55,50 +127,94 @@ option && myChart.setOption(option);
 
     <div class="row">
 
-      <div class="col-6">
+      <div class="col-6" style="overflow:auto">
 
-        <h2>Production</h2>
-        <table class="table table-striped table-bars table-sm">
-          <tr>
-            <th>Food</th>
-            <th>Quantity (kg/cap)</th>
-          </tr>
-          {% for each in production %}
+        <div class="float-end mb-2">
+          <a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true" class="btn btn-light">
+            <i class="bi bi-grid-3x3"></i>
+            Data overview
+          </a>
+          <a href="{% url "production" %}?cities={{ city.id }}" class="btn btn-light">
+            <i class="bi bi-bar-chart-fill"></i>
+            Data visualizations
+          </a>
+        </div>
+
+        <h4>Production</h4>
+        <div class="table-bars-box">
+          <table class="table table-striped table-bars table-sm">
             <tr>
-              <td>{{ each.food }}</td>
-              <td>
-                <span class="number">{{ each.quantity_per_capita|floatformat:1 }}</span>
-                <div class="cell-bar"></div>
-              </td>
+              <th>Food</th>
+              <th>Quantity (kg/cap)</th>
             </tr>
-          {% endfor %}
-        </table>
+            {% for each in production %}
+              <tr>
+                <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;food_name={{ each.food }}&amp;foodgroups={{ each.food_group.id }}">{{ each.food }}</a></td>
+                <td>
+                  <span data-number="{{ each.quantity_per_capita }}" class="number">{{ each.quantity_per_capita|floatformat:1 }}</span>
+                  <div class="cell-bar"></div>
+                </td>
+              </tr>
+            {% endfor %}
+            <tfoot>
+              <tr>
+                <th>Total</th>
+                <th class="total" data-unit="kg/cap"></th>
+            </tfoot>
+          </table>
+        </div>
 
-        <h2>Imports</h2>
-        <table class="table table-striped table-bars table-sm">
-          <tr>
-            <th>Food</th>
-            <th>Quantity (kg/cap)</th>
-          </tr>
-          {% for each in imports %}
-            <tr>
-              <td>{{ each.food }}</td>
-              <td>
-                <span class="number">{{ each.quantity_per_capita|floatformat:1 }}</span>
-                <div class="cell-bar"></div>
-              </td>
-            </tr>
-          {% endfor %}
-        </table>
+        <section class="mt-4">
 
+          <div class="float-end mb-2">
+            <a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Imports&amp;sankey=true" class="btn btn-light">
+              <i class="bi bi-grid-3x3"></i>
+              Data overview
+            </a>
+            <a href="{% url "production" %}?cities={{ city.id }}" class="btn btn-light">
+              <i class="bi bi-bar-chart-fill"></i>
+              Data visualizations
+            </a>
+          </div>
+
+          <h4>Imports</h4>
+          <div class="table-bars-box">
+            <table class="table table-striped table-bars table-sm">
+              <tr>
+                <th>Food</th>
+                <th>Quantity (kg/cap)</th>
+              </tr>
+              {% for each in imports %}
+                <tr>
+                  <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Imports&amp;sankey=true&amp;food_name={{ each.food }}&amp;foodgroups={{ each.food_group.id }}">{{ each.food }}</a></td>
+                  <td>
+                    <span data-number="{{ each.quantity_per_capita }}"  class="number">{{ each.quantity_per_capita|floatformat:1 }}</span>
+                    <div class="cell-bar"></div>
+                  </td>
+                </tr>
+              {% endfor %}
+              <tfoot>
+                <tr>
+                  <th>Total</th>
+                  <th class="total" data-unit="kg/cap"></th>
+              </tfoot>
+            </table>
+          </div>
+        </section>
+
+        <h4 class="mt-4">Consumption</h4>
+        <div id="consumption" style="width:100%;height:500px"></div>
 
       </div>
 
       <div class="col-6 bg-body-secondary">
 
         <h2>Food supply</h2>
+        <h3>What enters the food supply? Based on available data on imports and production</h3>
+        <div id="foodsupply" style="width:100%;height:500px"></div>
 
-        <div id="main" style="width:100%;height:500px"></div>
+        <h3>What leaves the food supply? Based on available data on consumption, loss, and exports</h3>
+        <div id="foodsupply_exit" style="width:100%;height:500px"></div>
 
       </div>
 

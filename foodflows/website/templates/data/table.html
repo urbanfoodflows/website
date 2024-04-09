@@ -78,6 +78,9 @@ $(function(){
             <option value="" {% if not request.GET.sankey %}selected{% endif %}>All data</option>
           </select>
         </div>
+        <div class="col-auto">
+          <input type="text" name="food_name" class="form-control" value="{{ request.GET.food_name|default_if_none:"" }}" placeholder="Search by food name" />
+        </div>
       </div>
 
       <br>

@@ -17,6 +17,42 @@ def p(text):
     print(text)
     print("----------------------")
 
+# We use this function to get the per-capita total, which requires a subquery to query the population table
+# and conversion to a float as not to have an integer being returned. We can use this on any query and it 
+# will return the figure
+def get_per_capita_total(query):
+    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
+    query = query.aggregate(
+        per_capita=ExpressionWrapper(
+            Sum(F("quantity") * 1000.0 / Subquery(population.values("population")[:1])),
+            output_field=FloatField()
+        )
+    )
+    return query["per_capita"]
+
+
+# For creation of pie charts, bar charts, etc we need to get the food group, its color, and its 
+# total quantity PER CAPITA. This requires a population subquery. We do this here, so we can 
+# have simpler code below.
+def per_capita_breakdown(query, params={}):
+    # First let's select the values we need, and add the total quantity
+    query = query.values("food_group__name","food_group__color").annotate(total=Sum("quantity"))
+
+    # Define a FloatField for the per_capita annotation, otherwise these figures are integers
+    per_capita_field = FloatField() 
+
+    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
+    query = query.annotate(population=Subquery(population.values("population")[:1]))
+    query = query.annotate(per_capita=ExpressionWrapper(
+        F("total") * 1000.0 / F("population"),
+        output_field=per_capita_field
+    ))
+
+    if "top_ten" in params and query:
+        query = query.order_by("-per_capita")[:10]
+
+    return query
+
 @login_required
 def index(request):
 
@@ -64,41 +100,28 @@ def data(request):
 @login_required
 def data_city(request, id):
 
+    if "cities" in request.GET:
+        return redirect("data_city", request.GET["cities"])
     city = City.objects.get(is_active=True, pk=id)
 
-    foodsupply = Data.objects.filter(city=city, sankey=True, source__name="Food supply") \
-        .values("food_group__name","food_group__color").annotate(total=Sum("quantity"))
-
-    per_capita_field = FloatField() # Define a FloatField for the per_capita annotation, otherwise these figures are integers
-    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
-    foodsupply = foodsupply.annotate(population=Subquery(population.values("population")[:1]))
-    foodsupply = foodsupply.annotate(per_capita=ExpressionWrapper(
-        F("total") * 1000.0 / F("population"),
-        output_field=per_capita_field
-    ))
-    if foodsupply:
-        foodsupply = foodsupply.order_by("-per_capita")[:10]
-
-    # Getting the TOTAL food supply (single figure). We show it in the middle of the pie chart
-    # and we can use it to calculate the OTHER slice in the pie chart
-    foodsupply_total = Data.objects.filter(city=city, sankey=True, source__name="Food supply")
-    foodsupply_total = foodsupply_total.aggregate(
-        per_capita=ExpressionWrapper(
-            Sum(F("quantity") * 1000.0 / Subquery(population.values("population")[:1])),
-            output_field=FloatField()
-        )
-    )
+    foodsupply = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, target__name="Food supply"), {"topten": True})
+    foodsupply_exit = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, source__name="Food supply"), {"topten": True})
+    consumption = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, target__name="Consumption"), {"topten": True})
 
     context = {
         "city": city,
         "menu": "data",
         "submenu": "homepage",
-        "production": Data.objects.filter(sankey=True, city=city, source__name="Production").order_by("-quantity")[:10],
-        "imports": Data.objects.filter(sankey=True, city=city, source__name="Imports").order_by("-quantity")[:10],
+        "production": Data.objects.filter(sankey=True, city=city, source__name="Production").order_by("-quantity"),
+        "imports": Data.objects.filter(sankey=True, city=city, source__name="Imports").order_by("-quantity"),
         "table_bars": True,
         "echarts": True,
         "foodsupply": foodsupply,
-        "foodsupply_total": foodsupply_total["per_capita"],
+        "foodsupply_exit": foodsupply_exit,
+        "foodsupply_total": get_per_capita_total(Data.objects.filter(city=city, sankey=True, target__name="Food supply")),
+        "foodsupply_exit_total": get_per_capita_total(Data.objects.filter(city=city, sankey=True, source__name="Food supply")),
+        "consumption": consumption,
+        "consumption_total": get_per_capita_total(Data.objects.filter(city=city, sankey=True, target__name="Consumption")),
     }
 
     return render(request, "data/city.html", context)
@@ -127,6 +150,9 @@ def data_table(request):
             data = data.filter(source=activity)
         else:
             messages.warning("You did not specify source/target filter, please add this filter.")
+
+    if "food_name" in request.GET and request.GET["food_name"]:
+        data = data.filter(food=request.GET.get("food_name"))
 
     per_capita_field = FloatField() # Define a FloatField for the per_capita annotation, otherwise these figures are integers
     population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
