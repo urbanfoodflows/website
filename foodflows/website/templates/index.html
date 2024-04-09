@@ -11,7 +11,7 @@
     </p>
 
     <div class="mb-5">
-      <a href="https://f151cf6f.us2a.app.preset.io/superset/dashboard/9/" class="btn btn-primary btn-lg px-4">View dashboard</a>
+      <a href="/data/" class="btn btn-primary btn-lg px-4">View dashboard</a>
     </div>
 
     <hr class="col-3 col-md-2 mb-5">
@@ -23,7 +23,7 @@
         <ul class="list-unstyled ps-0">
           {% for each in CITIES %}
           <li>
-            <a class="icon-link mb-1" href="/cities/{{ each.id }}/">
+            <a class="icon-link mb-1" href="/data/city/{{ each.id }}/">
               <i class="bi bi-arrow-right-circle-fill"></i>
               {{ each }}
             </a>

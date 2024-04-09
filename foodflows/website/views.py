@@ -9,11 +9,15 @@ import pandas as pd
 import numpy as np
 from django.db.models import Sum, OuterRef, Subquery, FloatField, ExpressionWrapper, F
 from django.db.models.expressions import RawSQL
+import math
 
 #########################################################
 # START OF CENTRAL FUNTIONS        
 # These functions are called on from different places
 #########################################################
+
+# Used in a number of places to do a subquery in order to get the relevant population for a data point
+POPULATION = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
 
 # Quick debugging, sometimes it's tricky to locate the PRINT in all the Django
 # output in the console, so just using a simply function to highlight it better
@@ -25,20 +29,28 @@ def p(text):
 # We use this function to get the per-capita total, which requires a subquery to query the population table
 # and conversion to a float as not to have an integer being returned. We can use this on any query and it 
 # will return the figure
-def get_per_capita_total(query):
-    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
+def per_capita_total(query):
     query = query.aggregate(
         per_capita=ExpressionWrapper(
-            Sum(F("quantity") * 1000.0 / Subquery(population.values("population")[:1])),
+            Sum(F("quantity") * 1000.0 / Subquery(POPULATION.values("population")[:1])),
             output_field=FloatField()
         )
     )
     return query["per_capita"]
 
+# Similar to before, but now for the environmental impact
+def per_capita_impact(query, field):
+    field = "food_group__" + field
+    query = query.aggregate(
+        per_capita=ExpressionWrapper(
+            Sum(F("quantity") * 1000.0 * F(field) / Subquery(POPULATION.values("population")[:1])),
+            output_field=FloatField()
+        )
+    )
+    return query["per_capita"]
 
 # For creation of pie charts, bar charts, etc we need to get the food group, its color, and its 
-# total quantity PER CAPITA. This requires a population subquery. We do this here, so we can 
-# have simpler code below.
+# total quantity PER CAPITA. This requires a population subquery. We do this in a central query to not repeat.
 def per_capita_breakdown(query, params={}):
     # First let's select the values we need, and add the total quantity
     query = query.values("food_group__name","food_group__color").annotate(total=Sum("quantity"))
@@ -46,12 +58,21 @@ def per_capita_breakdown(query, params={}):
     # Define a FloatField for the per_capita annotation, otherwise these figures are integers
     per_capita_field = FloatField() 
 
-    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
-    query = query.annotate(population=Subquery(population.values("population")[:1]))
-    query = query.annotate(per_capita=ExpressionWrapper(
-        F("total") * 1000.0 / F("population"),
-        output_field=per_capita_field
-    ))
+    query = query.annotate(population=Subquery(POPULATION.values("population")[:1]))
+
+    # If we need the impact factors, then we check which field and we multiply it by that field
+    if "impact" in params:
+        field = "food_group__" + params["impact"]
+        query = query.annotate(per_capita=ExpressionWrapper(
+            F("total") * 1000.0 / F("population") * F(field),
+            output_field=per_capita_field
+        ))
+    else:
+        # Otherwise we multiply the total quantity by population and that's it.
+        query = query.annotate(per_capita=ExpressionWrapper(
+            F("total") * 1000.0 / F("population"),
+            output_field=per_capita_field
+        ))
 
     if "top_ten" in params and query:
         query = query.order_by("-per_capita")[:10]
@@ -84,6 +105,12 @@ def index(request):
 @login_required
 def city(request, id):
 
+    if "cities" in request.GET:
+        return redirect("city", request.GET["cities"])
+    elif not id:
+        id = 1
+    city = City.objects.get(is_active=True, pk=id)
+
     ratings = {}
     for each in DataQualityIndicator.objects.filter(data__city=id):
         if not each.indicator.indicator.name in ratings:
@@ -91,37 +118,75 @@ def city(request, id):
         ratings[each.indicator.indicator.name][each.data.activity.name] = each.indicator
 
     context = {
-        "info": City.objects.get(pk=id),
+        "city": city,
         "descriptions": DataDescription.objects.filter(city_id=id),
         "activities": Activity.objects.all(),
         "indicators": Indicator.objects.all(),
         "ratings": ratings,
+        "submenu": "description",
     }
 
     return render(request, "city.html", context)
-
-@login_required
-def data(request):
-
-    cities = get_cities(request)
-    context = {
-        "cities": cities,
-        "menu": "data",
-        "submenu": "homepage",
-    }
-
-    return render(request, "data/index.html", context)
 
 #################################### 
 #   DATA PORTAL VIEWS
 ####################################
 
+@login_required
+def data(request):
+
+    cities = get_cities(request)
+    consumption_data = {}
+    consumption_total = {}
+    emissions_data = {}
+    emissions_total = {}
+    production = {}
+    productiondetails = {}
+    imports = {}
+    for city in cities:
+
+        # Get the consumption details as well as total to calculate OTHER category
+        consumption_data[city.id] = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, target__name="Consumption"), {"topten": True})
+        consumption_total[city.id] = per_capita_total(Data.objects.filter(city=city, sankey=True, target__name="Consumption"))
+
+        # Get total imports
+        imports[city.id] = per_capita_total(Data.objects.filter(city=city, sankey=True, source__name="Imports"))
+
+        # For production get the total figure, but also get the top 10 items
+        production[city.id] = per_capita_total(Data.objects.filter(city=city, sankey=True, source__name="Production"))
+        production_data = Data.objects.filter(city=city, sankey=True, source__name="Production")
+        if production_data:
+            production_data = production_data.order_by("-quantity")[:10]
+        productiondetails[city.id] = production_data
+
+        emissions_data[city.id] = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, target__name="Consumption"), {"topten": True, "impact": "emissions"})
+        emissions_total[city.id] = per_capita_impact(Data.objects.filter(city=city, sankey=True, target__name="Consumption"), "emissions")
+
+    context = {
+        "cities": cities,
+        "menu": "data",
+        "submenu": "homepage",
+        "consumption_data": consumption_data,
+        "consumption_total": consumption_total,
+        "emissions_data": emissions_data,
+        "emissions_total": emissions_total,
+        "production": production,
+        "productiondetails": productiondetails,
+        "imports": imports,
+        "echarts": True,
+        "columns": math.floor(12/cities.count()),
+        "table_bars": True,
+    }
+
+    return render(request, "data/index.html", context)
 
 @login_required
-def data_city(request, id):
+def data_city(request, id=None):
 
     if "cities" in request.GET:
         return redirect("data_city", request.GET["cities"])
+    elif not id:
+        id = 1
     city = City.objects.get(is_active=True, pk=id)
 
     foodsupply = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, target__name="Food supply"), {"topten": True})
@@ -131,17 +196,17 @@ def data_city(request, id):
     context = {
         "city": city,
         "menu": "data",
-        "submenu": "homepage",
+        "submenu": "city",
         "production": Data.objects.filter(sankey=True, city=city, source__name="Production").order_by("-quantity"),
         "imports": Data.objects.filter(sankey=True, city=city, source__name="Imports").order_by("-quantity"),
         "table_bars": True,
         "echarts": True,
         "foodsupply": foodsupply,
         "foodsupply_exit": foodsupply_exit,
-        "foodsupply_total": get_per_capita_total(Data.objects.filter(city=city, sankey=True, target__name="Food supply")),
-        "foodsupply_exit_total": get_per_capita_total(Data.objects.filter(city=city, sankey=True, source__name="Food supply")),
+        "foodsupply_total": per_capita_total(Data.objects.filter(city=city, sankey=True, target__name="Food supply")),
+        "foodsupply_exit_total": per_capita_total(Data.objects.filter(city=city, sankey=True, source__name="Food supply")),
         "consumption": consumption,
-        "consumption_total": get_per_capita_total(Data.objects.filter(city=city, sankey=True, target__name="Consumption")),
+        "consumption_total": per_capita_total(Data.objects.filter(city=city, sankey=True, target__name="Consumption")),
     }
 
     return render(request, "data/city.html", context)
@@ -170,12 +235,10 @@ def data_table(request):
     if "food_name" in request.GET and request.GET["food_name"]:
         data = data.filter(food=request.GET.get("food_name"))
 
-    per_capita_field = FloatField() # Define a FloatField for the per_capita annotation, otherwise these figures are integers
-    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
-    data = data.annotate(population=Subquery(population.values("population")[:1]))
+    data = data.annotate(population=Subquery(POPULATION.values("population")[:1]))
     data = data.annotate(per_capita=ExpressionWrapper(
         F("quantity") * 1000.0 / F("population"),
-        output_field=per_capita_field
+        output_field=FloatField()
     ))
 
     context = {
@@ -194,9 +257,8 @@ def data_table(request):
 def production(request, page="table"):
 
     cities = get_cities(request)
-    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
     production = Data.objects.filter(city__in=cities, sankey=True, source__name="Production") \
-        .values("food_group", "year", "city").annotate(Sum("quantity")).annotate(population=Subquery(population.values("population")[:1])).order_by()
+        .values("food_group", "year", "city").annotate(Sum("quantity")).annotate(population=Subquery(POPULATION.values("population")[:1])).order_by()
 
     totals = {}
     per_capita = {}
@@ -244,10 +306,9 @@ def production_overview(request):
 
     cities = get_cities(request)
 
-    population_query = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
     production = Data.objects.filter(sankey=True, city__in=cities, source__name="Production") \
         .filter(quantity__gt=0) \
-        .annotate(population=Subquery(population_query.values("population")[:1]))
+        .annotate(population=Subquery(POPULATION.values("population")[:1]))
 
     totals = {}
     per_capita = {}
@@ -303,9 +364,8 @@ def ideal_diet(request, page="table"):
 
     cities = get_cities(request)
 
-    population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
     consumption = Data.objects.filter(city__in=cities, sankey=True, target__name="Consumption") \
-        .values("food_group", "year", "city").annotate(Sum("quantity")).annotate(population=Subquery(population.values("population")[:1])).order_by()
+        .values("food_group", "year", "city").annotate(Sum("quantity")).annotate(population=Subquery(POPULATION.values("population")[:1])).order_by()
 
     ideal = IdealConsumption.objects.all()
 

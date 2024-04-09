@@ -15,12 +15,12 @@
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Cities</a>
           <ul class="dropdown-menu">
             {% for each in CITIES %}
-              <li><a class="dropdown-item" href="/cities/{{ each.id }}/">{{ each }}</a></li>
+              <li><a class="dropdown-item" href="/data/city/{{ each.id }}/">{{ each }}</a></li>
             {% endfor %}
           </ul>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/">Data Dashboard</a>
+          <a class="nav-link" href="/data/">Data Dashboard</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/">About</a>

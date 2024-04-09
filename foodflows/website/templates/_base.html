@@ -34,6 +34,25 @@
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
 {% endif %}
 
+<script>
+$(document).ready(function() {
+  $("select[name=instant_city]").change(function(){
+    city = $(this).val();
+
+    // Get the current URL without query string
+    var baseUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+
+    // Append the query string
+    var finalUrl = baseUrl + "?cities=" + city;
+
+    // Redirect to this page
+    window.location.href = finalUrl;
+
+  });
+});
+
+</script>
+
 {% if table_bars %}
 <script>
 $(document).ready(function() {
@@ -104,6 +123,7 @@ svg#icon{width:100px}
 .table-bars {
   width: 100%;
   border-collapse: collapse;
+  position: relative;
 }
 
 .table-bars.table-sm > :not(caption) > * > * {
@@ -111,13 +131,17 @@ svg#icon{width:100px}
 }
 
 .table-bars td:first-child {
-  width: 200px;
+  max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .table-bars a {
   text-decoration:none;
+}
+.table-bars tfoot {
+  position: sticky;
+  bottom:0;
 }
 
 </style>

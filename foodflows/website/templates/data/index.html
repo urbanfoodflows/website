@@ -8,6 +8,91 @@
 
 {% endblock %}
 
+{% block footer %}
+<script>
+
+{% for city in cities %}
+  
+  var consumption_{{ city.id }}_dom = document.getElementById('consumption_{{ city.id }}');
+  var consumption_{{ city.id }}_chart = echarts.init(consumption_{{ city.id }}_dom);
+  var consumption_{{ city.id }}_options;
+
+  var consumption_{{ city.id }}_other = {{ consumption_total|get_item:city.id }};
+  {% for each in consumption_data|get_item:city.id %}
+  consumption_{{ city.id }}_other -= {{ each.per_capita|default_if_none:0 }};
+  {% endfor %}
+
+  consumption_{{ city.id }}_options = {
+    title: {
+      text: '{{ consumption_total|get_item:city.id|floatformat:0 }} kg/cap',
+      left: 'center',
+      top: 'center'
+    },
+    color: [{% for each in consumption_data|get_item:city.id %}'{{ each.food_group__color }}',{% endfor %}'black'],
+    tooltip: {
+      trigger: 'item'
+    },
+    series: [
+      {
+        name: 'Food group',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: true,
+        data: [
+          {% for each in consumption_data|get_item:city.id %}
+          { value: {{ each.per_capita|floatformat:1 }}, name: '{{ each.food_group__name|safe }}' },
+          {% endfor %}
+          { value: consumption_{{ city.id }}_other, name: 'Other' }
+        ]
+      }
+    ]
+  };
+
+  consumption_{{ city.id }}_options && consumption_{{ city.id }}_chart.setOption(consumption_{{ city.id }}_options);
+
+  // Now the same for the emissions graphs
+  var emissions_{{ city.id }}_dom = document.getElementById('emissions_{{ city.id }}');
+  var emissions_{{ city.id }}_chart = echarts.init(emissions_{{ city.id }}_dom);
+  var emissions_{{ city.id }}_options;
+
+  var emissions_{{ city.id }}_other = {{ emissions_total|get_item:city.id }};
+  {% for each in emissions_data|get_item:city.id %}
+  emissions_{{ city.id }}_other -= {{ each.per_capita|default_if_none:0 }};
+  {% endfor %}
+
+  emissions_{{ city.id }}_options = {
+    title: {
+      text: '{{ emissions_total|get_item:city.id|floatformat:0 }} kg/cap',
+      left: 'center',
+      top: 'center'
+    },
+    color: [{% for each in emissions_data|get_item:city.id %}'{{ each.food_group__color }}',{% endfor %}'black'],
+    tooltip: {
+      trigger: 'item'
+    },
+    series: [
+      {
+        name: 'Food group',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        avoidLabelOverlap: true,
+        data: [
+          {% for each in emissions_data|get_item:city.id %}
+          { value: {% if each.per_capita %}{{ each.per_capita|floatformat:1 }}{% else %}0{% endif %}, name: '{{ each.food_group__name|safe }}' },
+          {% endfor %}
+          { value: emissions_{{ city.id }}_other, name: 'Other' }
+        ]
+      }
+    ]
+  };
+
+  emissions_{{ city.id }}_options && emissions_{{ city.id }}_chart.setOption(emissions_{{ city.id }}_options);
+
+{% endfor %}
+
+</script>
+{% endblock %}
+
 {% block content %}
 
 <div class="row">
@@ -18,6 +103,79 @@
 
   <div class="col-10">
 
+    <div class="row">
+      {% for city in cities %}
+        <div class="col-md-{{ columns }}">
+          <h2>{{ city }}</h2>
+          <h3 class="mt-4">Consumption</h3>
+          <div id="consumption_{{ city.id }}" style="width:100%;height:400px"></div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="row">
+      {% for city in cities %}
+        <div class="col-md-{{ columns }}">
+
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">{{ production|get_item:city.id|floatformat:0 }} kg/cap</h4>
+            <h6 class="card-subtitle mb-2 text-body-secondary">Local production</h6>
+          </div>
+        </div>
+
+        <div class="table-bars-box">
+          {% if productiondetails %}
+            <table class="table table-striped table-bars table-sm">
+              <tr>
+                <th>Top-10 foods produced</th>
+                <th>Quantity (kg/cap)</th>
+              </tr>
+              {% for each in productiondetails|get_item:city.id %}
+                <tr>
+                  <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;food_name={{ each.food }}&amp;foodgroups={{ each.food_group.id }}">{{ each.food }}</a></td>
+                  <td>
+                    <span data-number="{{ each.quantity_per_capita }}" class="number">{{ each.quantity_per_capita|floatformat:1 }}</span>
+                    <div class="cell-bar"></div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </table>
+          {% else %}
+            <div class="alert alert-warning">
+              <i class="bi bi-exclamation-triangle"></i>
+              No data available.
+            </div>
+          {% endif %}
+        </div>
+
+
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">
+              {% if imports|get_item:city.id > 0 %}
+                {{ imports|get_item:city.id|floatformat:0|intcomma }} kg/cap
+              {% else %}
+                <i class="bi bi-exclamation-triangle"></i>
+                Unknown
+              {% endif %}
+            </h4>
+            <h6 class="card-subtitle mb-2 text-body-secondary">Imports</h6>
+          </div>
+        </div>
+
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="row">
+      {% for city in cities %}
+        <div class="col-md-{{ columns }}">
+          <h3 class="mt-4">Emissions</h3>
+          <div id="emissions_{{ city.id }}" style="width:100%;height:400px"></div>
+        </div>
+      {% endfor %}
+    </div>
 
   </div>
 
