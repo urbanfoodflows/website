@@ -10,6 +10,11 @@ import numpy as np
 from django.db.models import Sum, OuterRef, Subquery, FloatField, ExpressionWrapper, F
 from django.db.models.expressions import RawSQL
 
+#########################################################
+# START OF CENTRAL FUNTIONS        
+# These functions are called on from different places
+#########################################################
+
 # Quick debugging, sometimes it's tricky to locate the PRINT in all the Django
 # output in the console, so just using a simply function to highlight it better
 def p(text):
@@ -53,6 +58,20 @@ def per_capita_breakdown(query, params={}):
 
     return query
 
+# We figure out what the list of cities is. Either based on GET parameters if they are set, 
+# or otherwise all the active cities.
+def get_cities(request):
+    if "cities" in request.GET:
+        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
+    else:
+        cities = City.objects.filter(is_active=True)
+    return cities
+
+#################################### 
+#   END OF CENTRAL FUNTIONS        
+####################################
+
+
 @login_required
 def index(request):
 
@@ -84,11 +103,7 @@ def city(request, id):
 @login_required
 def data(request):
 
-    if "cities" in request.GET:
-        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
-    else:
-        cities = City.objects.filter(is_active=True)
-
+    cities = get_cities(request)
     context = {
         "cities": cities,
         "menu": "data",
@@ -96,6 +111,11 @@ def data(request):
     }
 
     return render(request, "data/index.html", context)
+
+#################################### 
+#   DATA PORTAL VIEWS
+####################################
+
 
 @login_required
 def data_city(request, id):
@@ -129,11 +149,7 @@ def data_city(request, id):
 @login_required
 def data_table(request):
 
-    if "cities" in request.GET:
-        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
-    else:
-        cities = City.objects.filter(is_active=True)
-
+    cities = get_cities(request)
     data = Data.objects.filter(city__in=cities)
 
     if request.GET.get("sankey"):
@@ -177,11 +193,7 @@ def data_table(request):
 @login_required
 def production(request, page="table"):
 
-    if "cities" in request.GET:
-        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
-    else:
-        cities = City.objects.filter(is_active=True)
-
+    cities = get_cities(request)
     population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
     production = Data.objects.filter(city__in=cities, sankey=True, source__name="Production") \
         .values("food_group", "year", "city").annotate(Sum("quantity")).annotate(population=Subquery(population.values("population")[:1])).order_by()
@@ -230,10 +242,7 @@ def production(request, page="table"):
 @login_required
 def production_overview(request):
 
-    if "cities" in request.GET:
-        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
-    else:
-        cities = City.objects.filter(is_active=True)
+    cities = get_cities(request)
 
     population_query = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
     production = Data.objects.filter(sankey=True, city__in=cities, source__name="Production") \
@@ -292,16 +301,11 @@ def production_overview(request):
 @login_required
 def ideal_diet(request, page="table"):
 
-    if "cities" in request.GET:
-        cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
-    else:
-        cities = City.objects.filter(is_active=True)
-
+    cities = get_cities(request)
 
     population = Population.objects.filter(city_id=OuterRef("city_id"), year=OuterRef("year"))[:1]
     consumption = Data.objects.filter(city__in=cities, sankey=True, target__name="Consumption") \
         .values("food_group", "year", "city").annotate(Sum("quantity")).annotate(population=Subquery(population.values("population")[:1])).order_by()
-
 
     ideal = IdealConsumption.objects.all()
 
