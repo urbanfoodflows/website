@@ -107,7 +107,7 @@
       {% for city in cities %}
         <div class="col-md-{{ columns }}">
           <h2>{{ city }}</h2>
-          <h3 class="mt-4">Consumption</h3>
+          <h3 class="mt-4"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=target&amp;activity=Consumption&amp;sankey=true">Consumption</a></h3>
           <div id="consumption_{{ city.id }}" style="width:100%;height:400px"></div>
         </div>
       {% endfor %}
@@ -119,7 +119,7 @@
 
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title">{{ production|get_item:city.id|floatformat:0 }} kg/cap</h4>
+            <h4 class="card-title"><a style="color:#000" href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true">{{ production|get_item:city.id|floatformat:0 }} kg/cap</a></h4>
             <h6 class="card-subtitle mb-2 text-body-secondary">Local production</h6>
           </div>
         </div>
@@ -154,7 +154,9 @@
           <div class="card-body">
             <h4 class="card-title">
               {% if imports|get_item:city.id > 0 %}
-                {{ imports|get_item:city.id|floatformat:0|intcomma }} kg/cap
+                <a style="color:#000" href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Imports&amp;sankey=true">
+                  {{ imports|get_item:city.id|floatformat:0|intcomma }} kg/cap
+                </a>
               {% else %}
                 <i class="bi bi-exclamation-triangle"></i>
                 Unknown
