@@ -413,12 +413,6 @@ def ideal_diet(request, page="table"):
                     # For the table etc we just want to know how many % this is higher or lower
                     percentage[city.id][each.id] = ((grouptotals[city.id][each.id]/each.quantity)*100)-100
 
-
-    if "load" in request.GET:
-        for each in ideal:
-            each.color = each.foodgroups.all()[0].color
-            each.save()
-
     if page == "barchart" or page == "barchartgrouped":
         # We calculate the value as a % of the target value. That doesn't work if the target value is 0 so we remove them.
         ideal = ideal.filter(quantity__gt=0)

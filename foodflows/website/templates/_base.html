@@ -32,6 +32,22 @@
 
 {% if echarts %}
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.0/dist/echarts.min.js"></script>
+  <script>
+  $(document).ready(function() {
+    // When clicking the download button, we create the image from the canvas and open it
+    $(".download").click(function(e){
+      e.preventDefault()
+
+      chart = charts[$(this).data("chart")];
+      image = chart.getDataURL({
+          pixelRatio: 2, // Higher resolution than on-screen
+          backgroundColor: '#fff' // Give it a white bg like on-screen perceived by user
+      });
+
+      window.location = image;
+    });
+  });
+  </script>
 {% endif %}
 
 <script>
@@ -49,6 +65,7 @@ $(document).ready(function() {
     window.location.href = finalUrl;
 
   });
+
 });
 
 </script>
@@ -105,6 +122,7 @@ svg#icon{width:100px}
 }
 .chart{position:relative}
 .png{position:absolute;top:10px;right:10px}
+.download{position:absolute;top:-20px;right:10px}
 
 .table-bars td{position:relative;font-size:11px}
 .table-bars-box{max-height:300px;overflow-y: scroll;overflow-x:hidden;clear:both}
