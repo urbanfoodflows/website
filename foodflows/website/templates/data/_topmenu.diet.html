@@ -16,14 +16,19 @@
           <i class="bi bi-collection"></i>
         </a>
       </li>
+      <li>
+        <a href="{% url "ideal_diet_barchart" %}?{{ request.GET.urlencode }}" title="Bar charts" class="nav-link {% if page == "barchart" %}active{% endif %} py-3 border-bottom rounded-0">
+          <i class="bi bi-bar-chart-fill"></i>
+        </a>
+      </li>
+      <li>
+        <a href="{% url "ideal_diet_barchartgrouped" %}?{{ request.GET.urlencode }}" title="Grouped bar charts" class="nav-link {% if page == "barchartgrouped" %}active{% endif %} py-3 border-bottom rounded-0">
+          <i class="bi bi-bar-chart-fill"></i>
+        </a>
+      </li>
       <li class="nav-item">
         <a href="{% url "ideal_diet" %}?{{ request.GET.urlencode }}" title="Table" class="nav-link {% if page == "table" %}active{% endif %} py-3 border-bottom rounded-0">
           <i class="bi bi-table"></i>
-        </a>
-      </li>
-      <li hidden>
-        <a href="{% url "ideal_diet_individualchart" %}?{{ request.GET.urlencode }}" title="Individual charts" class="nav-link {% if page == "individualchart" %}active{% endif %} py-3 border-bottom rounded-0">
-          <i class="bi bi-bar-chart-fill"></i>
         </a>
       </li>
     </ul>

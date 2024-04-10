@@ -1,0 +1,109 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+
+{% block title %}Ideal Diet Analysis{% endblock %}
+
+{% block footer %}
+<script type="text/javascript">
+
+var myChart = echarts.init(document.getElementById('chart'));
+
+var option = {
+  title: {
+    text: 'Ideal diet analysis',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    } 
+  },
+  legend: {
+    data: [{% for each in cities %}'{{ each }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    top: 30
+  },
+  xAxis: {
+    type: 'category',
+    data: [{% for each in ideal %}'{{ each }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    splitArea: {
+        show: true,
+        areaStyle: {
+            color: ['rgba(0, 0, 0, 0.06)','transparent']
+        }
+    },
+    axisLabel: {
+        interval: 0, // Show all labels
+        formatter: function (value) {
+            // Customize label to truncate with ellipsis
+            var maxLength = 10; // Maximum characters to display
+            if (value.length > maxLength) {
+                return value.substring(0, maxLength) + '...';
+            } else {
+                return value;
+            }
+        }
+    }
+  },
+  yAxis: {
+    type: 'value',
+    name: 'g/day',
+    axisLabel: {
+      formatter: '{value} %'
+    }
+  },
+  series: [{% for city in cities %}{
+      name: '{{ city|safe }}',
+      type: 'bar',
+      color: '{{ city.color }}',
+      data: [{% for each in ideal %}{{ percentage|get_item:city.id|get_item:each.id|floatformat:1 }}{% if not forloop.last %},{% endif %}{% endfor %}]
+    },{% endfor %}
+    {
+      type: 'line',
+      data: [{% for each in ideal %}100{% if not forloop.last %},{% endif %}{% endfor %}],
+      lineStyle: {
+        normal: {
+          type: 'solid'
+        }
+      },
+      markLine: {
+        label: {
+          position: 'end',
+          formatter: '100%'
+        },
+        data: [{
+          yAxis: 100
+        }]
+      }
+    }
+  ]
+};
+
+myChart.setOption(option);
+
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    {% include "data/_topmenu.diet.html" %}
+
+    <h2>Ideal Diet Analysis</h2>
+
+    <div>
+    <span id='chart' style='width: 100%; height: 850px; display: inline-block'></span>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

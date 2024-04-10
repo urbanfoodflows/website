@@ -406,7 +406,22 @@ def ideal_diet(request, page="table"):
                 if group.id in totals[city.id]:
                     grouptotals[city.id][each.id] += totals[city.id][group.id]
             if each.quantity:
-                percentage[city.id][each.id] = ((grouptotals[city.id][each.id]/each.quantity)*100)-100
+                if page == "barchart" or page == "barchartgrouped":
+                    # For the bar charts we want to know consumption as a % of ideal consumption
+                    percentage[city.id][each.id] = ((grouptotals[city.id][each.id]/each.quantity)*100)
+                else:
+                    # For the table etc we just want to know how many % this is higher or lower
+                    percentage[city.id][each.id] = ((grouptotals[city.id][each.id]/each.quantity)*100)-100
+
+
+    if "load" in request.GET:
+        for each in ideal:
+            each.color = each.foodgroups.all()[0].color
+            each.save()
+
+    if page == "barchart" or page == "barchartgrouped":
+        # We calculate the value as a % of the target value. That doesn't work if the target value is 0 so we remove them.
+        ideal = ideal.filter(quantity__gt=0)
 
     context = {
         "ideal": ideal,
@@ -418,6 +433,7 @@ def ideal_diet(request, page="table"):
         "page": page,
         "google_charts": False if page == "table" else True,
         "ideals": ideals,
+        "echarts": True if page == "barchart" or page == "barchartgrouped" else False,
     }
 
     return render(request, f"data/diet.{page}.html", context)

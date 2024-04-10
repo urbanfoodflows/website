@@ -66,6 +66,7 @@ class IdealConsumption(models.Model):
     name = models.CharField(max_length=255, null=True, blank=True)
     quantity = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Ideal per capita consumption (g/day)")
     foodgroups = models.ManyToManyField(FoodGroup)
+    color = models.CharField(max_length=10, null=True, blank=True)
 
     def __str__(self):
         return self.name
