@@ -1,0 +1,59 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+{% load humanize %}
+
+{% block title %}Food Production Comparison{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    {% include "data/_topmenu.impact.html" %}
+
+    <h2>Emissions</h2>
+
+    <table class="table table-striped">
+      <tr>
+        <th></th>
+        {% for city in cities %}
+          <th colspan="3">{{ city }}</th>
+        {% endfor %}
+      <tr>
+      <tr>
+        <th>Food Group</th>
+        {% for city in cities %}
+          <th>Total consumption</th>
+          <th>Total impact CO2EQ</th>
+          <th>Per-capita impact CO2EQ</th>
+        {% endfor %}
+      <tr>
+      {% for each in foodgroups %}
+        <tr>
+          <td>
+            {{ each }}
+          </td>
+          {% for city in cities %}
+            {% if totals|get_item:city.id|get_item:each.name %}
+              <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=target&amp;activity=Consumption&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals|get_item:city.id|get_item:each.name|intcomma }} t</a></td>
+              <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Consumption&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals_impact|get_item:city.id|get_item:each.name|floatformat:0|intcomma }} t</a></td>
+              <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ per_capita|get_item:city.id|get_item:each.name|floatformat:1 }} kg</a></td>
+            {% else %}
+              <td colspan="3"></td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </table>
+    
+
+  </div>
+
+</div>
+
+{% endblock %}

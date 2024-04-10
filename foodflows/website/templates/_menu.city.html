@@ -99,6 +99,12 @@
     </a>
   </li>
   <li>
+    <a href="{% url "impact_chart" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "impact" %}active{% endif %}">
+      <i class="bi bi-arrow-right-circle"></i>
+      Environmental impact
+    </a>
+  </li>
+  <li>
     <a href="{% url "ideal_diet_chart" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "idealdiet" %}active{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Ideal diet analysis

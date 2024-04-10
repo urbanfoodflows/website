@@ -10,6 +10,7 @@ import numpy as np
 from django.db.models import Sum, OuterRef, Subquery, FloatField, ExpressionWrapper, F
 from django.db.models.expressions import RawSQL
 import math
+from collections import defaultdict
 
 #########################################################
 # START OF CENTRAL FUNTIONS        
@@ -53,7 +54,10 @@ def per_capita_impact(query, field):
 # total quantity PER CAPITA. This requires a population subquery. We do this in a central query to not repeat.
 def per_capita_breakdown(query, params={}):
     # First let's select the values we need, and add the total quantity
-    query = query.values("food_group__name","food_group__color").annotate(total=Sum("quantity"))
+    fields_to_include = ["food_group__name","food_group__color"]
+    if "include_city" in params:
+        fields_to_include.append("city_id")
+    query = query.values(*fields_to_include).annotate(total=Sum("quantity"))
 
     # Define a FloatField for the per_capita annotation, otherwise these figures are integers
     per_capita_field = FloatField() 
@@ -67,6 +71,8 @@ def per_capita_breakdown(query, params={}):
             F("total") * 1000.0 / F("population") * F(field),
             output_field=per_capita_field
         ))
+        # And we also want not just the total quantity, but the total quantity of that impact
+        query = query.annotate(total_impact=Sum("quantity")*F(field))
     else:
         # Otherwise we multiply the total quantity by population and that's it.
         query = query.annotate(per_capita=ExpressionWrapper(
@@ -210,6 +216,37 @@ def data_city(request, id=None):
     }
 
     return render(request, "data/city.html", context)
+
+@login_required
+def impact(request, page="index"):
+
+    cities = get_cities(request)
+    emissions_data = per_capita_breakdown(Data.objects.filter(city__in=cities, sankey=True, target__name="Consumption"), {"impact": "emissions", "include_city": True})
+
+    # We create defaultdicts so we don't have to manually create all the dictionaries
+    totals = defaultdict(dict)
+    per_capita = defaultdict(dict)
+    totals_impact = defaultdict(dict)
+
+    for each in emissions_data:
+        totals[each["city_id"]][each["food_group__name"]] = each["total"]
+        totals_impact[each["city_id"]][each["food_group__name"]] = each["total_impact"]
+        per_capita[each["city_id"]][each["food_group__name"]] = each["per_capita"]
+
+    context = {
+        "cities": cities,
+        "menu": "data",
+        "submenu": "impact",
+        "page": page,
+        "table_bars": True,
+        "foodgroups": FoodGroup.objects.all(),
+        "totals": totals,
+        "totals_impact": totals_impact,
+        "per_capita": per_capita,
+        "echarts": True,
+    }
+
+    return render(request, f"data/impact.{page}.html", context)
 
 @login_required
 def data_table(request):
