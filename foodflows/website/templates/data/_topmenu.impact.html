@@ -7,8 +7,18 @@
         </a>
       </li>
       <li>
-        <a href="{% url "impact_chart" %}?{{ request.GET.urlencode }}" title="Single comparison" class="nav-link {% if page == "chart" %}active{% endif %} py-3 border-bottom rounded-0">
-          <i class="bi bi-bar-chart-steps"></i>
+        <a href="{% url "impact_chart" "emissions" %}?{{ request.GET.urlencode }}" title="GHG Emissions" class="nav-link {% if page == "emissions" %}active{% endif %} py-3 border-bottom rounded-0">
+          <i class="bi bi-fire"></i>
+        </a>
+      </li>
+      <li>
+        <a href="{% url "impact_chart" "water_use" %}?{{ request.GET.urlencode }}" title="Water" class="nav-link {% if page == "water_use" %}active{% endif %} py-3 border-bottom rounded-0">
+          <i class="bi bi-droplet"></i>
+        </a>
+      </li>
+      <li>
+        <a href="{% url "impact_chart" "land_use" %}?{{ request.GET.urlencode }}" title="Land" class="nav-link {% if page == "land_use" %}active{% endif %} py-3 border-bottom rounded-0">
+          <i class="bi bi-geo"></i>
         </a>
       </li>
       <li class="nav-item">

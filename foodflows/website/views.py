@@ -87,11 +87,13 @@ def per_capita_breakdown(query, params={}):
 
 # We figure out what the list of cities is. Either based on GET parameters if they are set, 
 # or otherwise all the active cities.
-def get_cities(request):
+def get_cities(request, include_sample_city=False):
     if "cities" in request.GET:
         cities = City.objects.filter(is_active=True, pk__in=request.GET.getlist("cities"))
     else:
         cities = City.objects.filter(is_active=True)
+    if include_sample_city:
+        cities = cities | City.objects.filter(pk=5) # This is the sample city ID
     return cities
 
 #################################### 
@@ -230,10 +232,17 @@ def data_city(request, id=None):
     return render(request, "data/city.html", context)
 
 @login_required
-def impact(request, page="index"):
+def impact(request, page="index", impact_type="emissions"):
 
-    cities = get_cities(request)
-    emissions_data = per_capita_breakdown(Data.objects.filter(city__in=cities, sankey=True, target__name="Consumption"), {"impact": "emissions", "include_city": True})
+    if page == "table" and request.GET.get("impact_type"):
+        impact_type = request.GET.get("impact_type")
+
+    get_sample_city = False
+    if "sample_city" in request.GET and request.GET.get("sample_city"):
+        get_sample_city = True
+    cities = get_cities(request, get_sample_city)
+
+    emissions_data = per_capita_breakdown(Data.objects.filter(city__in=cities, sankey=True, target__name="Consumption"), {"impact": impact_type, "include_city": True})
 
     # We create defaultdicts so we don't have to manually create all the dictionaries
     totals = defaultdict(dict)
@@ -245,17 +254,25 @@ def impact(request, page="index"):
         totals_impact[each["city_id"]][each["food_group__name"]] = each["total_impact"]
         per_capita[each["city_id"]][each["food_group__name"]] = each["per_capita"]
 
+    impact_types = {
+        "emissions": {"title": "GHG emissions", "unit": "kg CO2eq", "unit_10k": "t CO2eq"},
+        "land_use": {"title": "Land use", "unit": "m3", "unit_10k": "ha"},
+        "water_use": {"title": "Freshwater withdrawals", "unit": "l", "unit_10k": "kl"},
+    }
+
     context = {
         "cities": cities,
         "menu": "data",
         "submenu": "impact",
-        "page": page,
+        "page": impact_type if page == "chart" else page,
         "table_bars": True,
-        "foodgroups": FoodGroup.objects.all(),
+        "foodgroups": FoodGroup.objects.filter(is_human_food=True),
         "totals": totals,
         "totals_impact": totals_impact,
         "per_capita": per_capita,
         "echarts": True,
+        "impact_types": impact_types,
+        "impact_type": impact_types[impact_type],
     }
 
     return render(request, f"data/impact.{page}.html", context)

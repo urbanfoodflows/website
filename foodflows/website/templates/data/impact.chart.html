@@ -15,7 +15,7 @@
     var option = {
       // Title of the chart
       title: {
-        text: 'Total GHG emissions (Kg of CO2 equivalent)',
+        text: 'Total {{ impact_type.title }} ({{ impact_type.unit }})',
         left: 'center'
       },
       // Tooltip configuration
@@ -27,7 +27,7 @@
       },
       // Legend configuration
       legend: {
-        data: [{% for each in foodgroups %}'{{ each }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        data: [{% for each in foodgroups %}'{{ each|safe }}'{% if not forloop.last %},{% endif %}{% endfor %}],
         top: 'bottom'
       },
       // Grid configuration
@@ -40,7 +40,7 @@
       // X-axis configuration
       xAxis: {
         type: 'category',
-        data: [{% for each in cities %}'{{ each }}'{% if not forloop.last %},{% endif %}{% endfor %}]
+        data: [{% for each in cities %}{% if each.id != 5 %}'{{ each }}'{% if not forloop.last %},{% endif %}{% endif %}{% endfor %}]
       },
       // Y-axis configuration
       yAxis: {
@@ -48,7 +48,7 @@
       },
       // Series configuration
       series: [{% for each in foodgroups %}{
-          name: '{{ each }}',
+          name: '{{ each|safe }}',
           type: 'bar',
           stack: 'total',
           emphasis: {
@@ -74,7 +74,7 @@
     var option = {
       // Title of the chart
       title: {
-        text: 'Per-capita GHG emissions (Kg of CO2 equivalent)',
+        text: 'Per-capita {{ impact_type.title }} ({{ impact_type.unit }})',
         left: 'center'
       },
       // Tooltip configuration
@@ -107,7 +107,7 @@
       },
       // Series configuration
       series: [{% for each in foodgroups %}{
-          name: '{{ each }}',
+          name: '{{ each|safe }}',
           type: 'bar',
           stack: 'total',
           emphasis: {
@@ -141,17 +141,29 @@
 
     <h2>Environmental impact</h2>
 
+    <form class="row g-3 align-items-center">
+      <div class="col-auto">
+        <label for="citySelect" class="visually-hidden">Sample city:</label>
+        <select class="form-select" id="citySelect" name="sample_city">
+          <option value="">Hide 'ideal diet' sample city</option>
+          <option value="true" {% if request.GET.sample_city == "true" %}selected{% endif %}>Show 'ideal diet' sample city</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Show graph</button>
+      </div>
+    </form>
+
     <div class="chart">
+      <a href="" title="Download" class="download" data-chart="per_capita_chart"><i class="bi bi-download"></i></a>
+      <span id='per_capita_chart' style='width: 100%; height: 850px; display: inline-block'></span>
+    </div>
+
+    <div class="chart mt-5">
       <a href="" title="Download" class="download" data-chart="total_chart"><i class="bi bi-download"></i></a>
       <span id='total_chart' style='width: 100%; height: 850px; display: inline-block'></span>
     </div>
     
-    <div class="chart mt-5">
-      <a href="" title="Download" class="download" data-chart="per_capita_chart"><i class="bi bi-download"></i></a>
-      <span id='per_capita_chart' style='width: 100%; height: 850px; display: inline-block'></span>
-    </div>
-    
-
   </div>
 
 </div>

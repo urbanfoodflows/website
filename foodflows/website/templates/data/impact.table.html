@@ -2,7 +2,33 @@
 {% load foodflows_extras %}
 {% load humanize %}
 
-{% block title %}Food Production Comparison{% endblock %}
+{% block title %}Environmental Impact - table{% endblock %}
+
+{% block footer %}
+<script>
+  $(document).ready(function() {
+    // Function to sum up numbers in an array
+    const sumNumbers = arr => arr.reduce((acc, val) => {
+      const num = parseFloat(val);
+      return isNaN(num) ? acc : acc + num;
+    }, 0);
+
+    // Loop through each column and calculate the sum
+    $('tfoot th:not(:first-child)').each(function() {
+      const columnClass = $(this).data('class'); // Get the class for the current column
+      let sum = 0;
+      $(`tbody tr td.${columnClass}`).each(function() {
+        const value = $(this).text().trim();
+        const num = parseFloat(value.replace(/,/g, '')); // Remove commas from numbers
+        if (!isNaN(num)) {
+          sum += num;
+        }
+      });
+      $(this).text(sum.toLocaleString('en-US', { maximumFractionDigits: 0 }));
+    });
+  });
+</script>
+{% endblock %}
 
 {% block content %}
 
@@ -16,9 +42,31 @@
 
     {% include "data/_topmenu.impact.html" %}
 
-    <h2>Emissions</h2>
+    <h2>Environmental Impact</h2>
 
-    <table class="table table-striped">
+    <form class="row g-3 align-items-center mb-5">
+      <div class="col-auto">
+        <label for="data_select" class="visually-hidden">Data:</label>
+        <select class="form-select" id="data_select" name="impact_type">
+          {% for key,value in impact_types.items %}
+            <option {% if request.GET.impact_type == key %}selected{% endif %} value="{{ key }}">{{ value.title }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-auto">
+        <label for="citySelect" class="visually-hidden">Sample city:</label>
+        <select class="form-select" id="citySelect" name="sample_city">
+          <option value="">Hide 'ideal diet' sample city</option>
+          <option value="true" {% if request.GET.sample_city == "true" %}selected{% endif %}>Show 'ideal diet' sample city</option>
+        </select>
+      </div>
+      <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Show graph</button>
+      </div>
+    </form>
+
+    <table class="table table-striped" id="data">
+      <thead>
       <tr>
         <th></th>
         {% for city in cities %}
@@ -28,11 +76,13 @@
       <tr>
         <th>Food Group</th>
         {% for city in cities %}
-          <th>Total consumption</th>
-          <th>Total impact CO2EQ</th>
-          <th>Per-capita impact CO2EQ</th>
+          <th>Total consumption<br>{{ impact_type.unit_10k }}</th>
+          <th>Total <br>{{ impact_type.unit_10k }}</th>
+          <th>Per-capita <br>{{ impact_type.unit }}</th>
         {% endfor %}
-      <tr>
+      </tr>
+      </thead>
+      <tbody>
       {% for each in foodgroups %}
         <tr>
           <td>
@@ -40,17 +90,26 @@
           </td>
           {% for city in cities %}
             {% if totals|get_item:city.id|get_item:each.name %}
-              <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=target&amp;activity=Consumption&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals|get_item:city.id|get_item:each.name|intcomma }} t</a></td>
-              <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Consumption&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals_impact|get_item:city.id|get_item:each.name|floatformat:0|intcomma }} t</a></td>
-              <td><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ per_capita|get_item:city.id|get_item:each.name|floatformat:1 }} kg</a></td>
+              <td class="c{{ city.id }}A"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=target&amp;activity=Consumption&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals|get_item:city.id|get_item:each.name|intcomma }}</a></td>
+              <td class="c{{city.id }}B"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Consumption&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals_impact|get_item:city.id|get_item:each.name|floatformat:0|intcomma }}</a></td>
+              <td class="c{{city.id }}C"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ per_capita|get_item:city.id|get_item:each.name|floatformat:1 }}</a></td>
             {% else %}
               <td colspan="3"></td>
             {% endif %}
           {% endfor %}
         </tr>
       {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Total</th>
+        {% for city in cities %}
+          <th data-class="c{{city.id}}A"></th>
+          <th data-class="c{{city.id}}B"></th>
+          <th data-class="c{{city.id}}C"></th>
+        {% endfor %}
+      </tfoot>
     </table>
-    
 
   </div>
 

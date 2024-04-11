@@ -54,6 +54,7 @@ class FoodGroup(models.Model):
     notes_methodology = models.TextField(null=True, blank=True)
     ideal_consumption = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Ideal per capita consumption (g/day)")
     color = models.CharField(max_length=10, null=True, blank=True)
+    is_human_food = models.BooleanField(db_index=True, default=True)
 
     def __str__(self):
         return self.name

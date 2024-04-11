@@ -19,6 +19,7 @@ urlpatterns = [
     path("data/production/comparison/", views.production, {"page": "comparison"}, name="production_comparison"),
     path("data/impact/", views.impact, name="impact"),
     path("data/impact/chart/", views.impact, {"page": "chart"}, name="impact_chart"),
+    path("data/impact/chart/<slug:impact_type>/", views.impact, {"page": "chart"}, name="impact_chart"),
     path("data/impact/table/", views.impact, {"page": "table"}, name="impact_table"),
     path("data/table/", views.data_table, name="data_table"),
     path("data/", views.data, name="data"),
