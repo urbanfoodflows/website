@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path("", views.index, name="index"),
     path("cities/<int:id>/", views.city, name="city"),
+    path("dqi/", views.dqi, name="dqi"),
 
     # Data section
     path("data/diet/", views.ideal_diet, name="ideal_diet"),

@@ -109,6 +109,18 @@ def index(request):
     return render(request, "index.html", context)
 
 @login_required
+def dqi(request):
+
+    context = {
+        "menu": "dqi",
+        "page": Page.objects.get(slug="dqi"),
+        "remove_full_width": True,
+        "dqi": Indicator.objects.all(),
+    }
+
+    return render(request, "dqi.html", context)
+
+@login_required
 def city(request, id):
 
     if "cities" in request.GET:
@@ -685,6 +697,7 @@ def controlpanel_datadescription(request, city, id=None):
         return redirect("controlpanel_city", id=city)
 
     context = {
+        "controlpanel": True,
         "city": City.objects.get(pk=city),
         "info": info,
         "activities": Activity.objects.all(),

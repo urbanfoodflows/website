@@ -187,42 +187,33 @@ svg#icon{width:100px}
 
   </header>
 
-  {% if menu == "data" %}
-
 </div>
 
-<div class="container-fluid">
+<div class="container{% if menu == "data" %}-fluid{% endif %}">
   <div class="row">
 
-{% endif %}
+    <main>
 
+      {% if messages %}
+        <div class="container">
+          {% for message in messages %}
+            <div class="alert {{ message.tags }} alert-dismissible fade show text-center" role="alert">
+              <i class="fad mr-2 fa-{% if message.tags == 'alert-info' %}info-circle{% elif message.tags == 'alert-success' %}check-circle{% elif message.tags == 'alert-warning' %}exclamation-triangle{% elif message.tags == 'error' %}exclamation-triangle{% endif %}"></i>
+              {{ message|safe }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
-  <main>
+      {% block content %}{% endblock %}
+    </main>
 
-    {% if messages %}
-      <div class="container">
-        {% for message in messages %}
-          <div class="alert {{ message.tags }} alert-dismissible fade show text-center" role="alert">
-            <i class="fad mr-2 fa-{% if message.tags == 'alert-info' %}info-circle{% elif message.tags == 'alert-success' %}check-circle{% elif message.tags == 'alert-warning' %}exclamation-triangle{% elif message.tags == 'error' %}exclamation-triangle{% endif %}"></i>
-            {{ message|safe }}
-          </div>
-        {% endfor %}
-      </div>
-    {% endif %}
-
-    {% block content %}{% endblock %}
-  </main>
-
-  <footer class="pt-5 my-5 text-body-secondary border-top">
-    This software is made available under an open source license. All code can be viewed
-    on <a href="">github</a>.
-  </footer>
+    <footer class="pt-5 my-5 text-body-secondary border-top">
+      This software is made available under an open source license. All code can be viewed
+      on <a href="">github</a>.
+    </footer>
 
 </div>
-
-  {% if menu == "data" %}
-  </div>
-  {% endif %}
 
 {% block footer %}{% endblock %}
 

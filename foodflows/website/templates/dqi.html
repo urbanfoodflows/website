@@ -1,0 +1,40 @@
+{% extends "_base.html" %}
+
+{% block header %}
+  <style>
+    table th:first-child {
+      width: 50px;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+
+<h1>{% block title %}Data Quality Indicators{% endblock %}</h1>
+
+{{ page.get_content }}
+
+{% for each in dqi %}
+
+  <h2 class="mt-4">{{ each }}</h2>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Rating</th>
+        <th scope="col">Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rating in each.ratings.all %}
+      <tr>
+        <th scope="row">{{ rating.rating }}</th>
+        <td>{{ rating.description }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endfor %}
+
+{% endblock %}

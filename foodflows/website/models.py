@@ -146,6 +146,9 @@ class Page(models.Model):
         ordering = ["title"]
         db_table = "pages"
 
+    def get_content(self):
+        return mark_safe(markdown(self.content))
+
 class DataDescription(models.Model):
     description = MDTextField(null=True, blank=True)
     city = models.ForeignKey(City, on_delete=models.CASCADE)
