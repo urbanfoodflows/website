@@ -2,7 +2,7 @@
 {% load foodflows_extras %}
 {% load humanize %}
 
-{% block title %}Food Production Comparison{% endblock %}
+{% block title %}Consumption data - table{% endblock %}
 
 {% block footer %}
 <script>
@@ -40,9 +40,9 @@
 
   <div class="col-10">
 
-    {% include "data/_topmenu.production.html" %}
+    {% include "data/_topmenu.consumption.html" %}
 
-    <h2>Food Production</h2>
+    <h2>Consumption</h2>
 
     <table class="table table-striped">
       <tr>
@@ -65,9 +65,9 @@
             {{ each }}
           </td>
           {% for city in cities %}
-            {% if totals|get_item:city.id|get_item:each.id %}
-            <td class="c{{city.id}}A"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals|get_item:city.id|get_item:each.id|intcomma }}</a></td>
-            <td class="c{{city.id}}B"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=source&amp;activity=Production&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ per_capita|get_item:city.id|get_item:each.id|floatformat:1 }}</a></td>
+            {% if totals|get_item:city.id|get_item:each.name %}
+            <td class="c{{city.id}}A"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=target&amp;activity=Consumption&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals|get_item:city.id|get_item:each.name|intcomma }}</a></td>
+            <td class="c{{city.id}}B"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=target&amp;activity=Consumption&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ per_capita|get_item:city.id|get_item:each.name|floatformat:1 }}</a></td>
             {% else %}
               <td colspan="2"></td>
             {% endif %}

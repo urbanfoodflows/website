@@ -232,6 +232,34 @@ def data_city(request, id=None):
     return render(request, "data/city.html", context)
 
 @login_required
+def consumption(request, page="index"):
+
+    cities = get_cities(request)
+    data = per_capita_breakdown(Data.objects.filter(city__in=cities, sankey=True, target__name="Consumption"), {"include_city": True})
+
+    # We create defaultdicts so we don't have to manually create all the dictionaries
+    totals = defaultdict(dict)
+    per_capita = defaultdict(dict)
+
+    for each in data:
+        totals[each["city_id"]][each["food_group__name"]] = each["total"]
+        per_capita[each["city_id"]][each["food_group__name"]] = each["per_capita"]
+
+    context = {
+        "cities": cities,
+        "menu": "data",
+        "submenu": "consumption",
+        "page": page,
+        "table_bars": True,
+        "foodgroups": FoodGroup.objects.filter(is_human_food=True),
+        "totals": totals,
+        "per_capita": per_capita,
+        "echarts": True,
+    }
+
+    return render(request, f"data/consumption.{page}.html", context)
+
+@login_required
 def impact(request, page="index", impact_type="emissions"):
 
     if page == "table" and request.GET.get("impact_type"):
