@@ -45,6 +45,41 @@
     {% endfor %}
   </div>
 
+
+  <h2>Overview by activity</h2>
+
+
+  <div class="row">
+    {% for activity in activities %}
+      <div class="col-lg-3 col-md-4 mb-5">
+        <h4>{{ activity }}</h4>
+        <table class="table" style="width:auto">
+          <tr>
+            <th class="w"></th>
+            {% for city in cities %}
+              <th class="ell" title="{{ city }}">{% if request.GET.full %}{{city.name}}{% else %}{{ city.shortname }}{% endif %}</th>
+            {% endfor %}
+          </tr>
+          </tr>
+          {% for each in indicators %}
+            <tr>
+              <th class="w">{% if request.GET.full %}{{each.name}}{% else %}{{ each.shortname }}{% endif %}</th>
+              {% for city in cities %}
+                {% with rating=ratings|get_item:city.id|get_item:each|get_item:activity %}
+                  <td style="width:50px;background:{% if rating %}{{ rating.color }}{% else %}#000{% endif %}">
+                    {% if request.GET.full %}
+                      {{ rating.rating }}
+                    {% endif %}
+                  </th>
+                {% endwith %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </table>
+      </div>
+    {% endfor %}
+  </div>
+
 </div>
 
 {% endblock %}
