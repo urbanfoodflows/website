@@ -1,0 +1,50 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+
+{% block title %}Data Quality Indicators{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+    <h1>Data Quality Indicators</h1>
+
+    <div class="row">
+    {% for city in cities %}
+      <div class="col-6 mb-5">
+      <h4>{{ city }}</h4>
+      <table class="table" style="width:auto">
+        <tr>
+          <th class="w"></th>
+          {% for each in activities %}
+            <th class="ell" title="{{ each }}">{% if request.GET.full %}{{each.name}}{% else %}{{ each.shortname }}{% endif %}</th>
+          {% endfor %}
+        </tr>
+        </tr>
+        {% for each in indicators %}
+          <tr>
+            <th class="w">{% if request.GET.full %}{{each.name}}{% else %}{{ each.shortname }}{% endif %}</th>
+            {% for activity in activities %}
+              {% with rating=ratings|get_item:city.id|get_item:each|get_item:activity %}
+                <td style="min-width:50px;background:{% if rating %}{{ rating.color }}{% else %}#000{% endif %}">
+                  {% if request.GET.full %}
+                    {{ rating.rating }}
+                  {% endif %}
+                </th>
+              {% endwith %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </table>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+{% endblock %}

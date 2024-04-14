@@ -8,6 +8,7 @@ User = get_user_model()
 
 class City(models.Model):
     name = models.CharField(max_length=255)
+    shortname = models.CharField(max_length=4, blank=True, null=True, help_text="This is shown in tables where space is tight. Normally 4 letters, all-caps.")
     image = models.ImageField(upload_to="cities/", max_length=255, null=True, blank=True)
     description = MDTextField(null=True, blank=True)
     dashboard_link = models.CharField(max_length=255, null=True, blank=True)
@@ -78,6 +79,7 @@ class IdealConsumption(models.Model):
 
 class Activity(models.Model):
     name = models.CharField(max_length=255)
+    shortname = models.CharField(max_length=4, blank=True, null=True, help_text="This is shown in tables where space is tight. Normally 4 letters, all-caps.")
     description = MDTextField(null=True, blank=True)
 
     def __str__(self):
@@ -171,6 +173,7 @@ class DataDescription(models.Model):
 
 class Indicator(models.Model):
     name = models.CharField(max_length=255)
+    shortname = models.CharField(max_length=4, blank=True, null=True, help_text="This is shown in tables where space is tight. Normally 4 letters, all-caps.")
 
     def __str__(self):
         return self.name

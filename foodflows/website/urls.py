@@ -17,6 +17,7 @@ urlpatterns = [
     path("data/consumption/", views.consumption, name="consumption"),
     path("data/consumption/table/", views.consumption, {"page": "table"}, name="consumption_table"),
     path("data/consumption/barchartgrouped/", views.consumption, {"page": "barchartgrouped"}, name="consumption_barchartgrouped"),
+    path("data/dqi/", views.data_dqi, name="data_dqi"),
     path("data/production/", views.production_overview, name="production"),
     path("data/production/table/", views.production, {"page": "table"}, name="production_table"),
     path("data/production/comparison/", views.production, {"page": "comparison"}, name="production_comparison"),

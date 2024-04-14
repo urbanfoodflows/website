@@ -117,6 +117,12 @@
     </a>
   </li>
   <li>
+    <a href="{% url "data_dqi" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "dqi" %}active{% endif %}">
+      <i class="bi bi-arrow-right-circle"></i>
+      Data quality indicators
+    </a>
+  </li>
+  <li>
     <a href="{% url "data_table" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "data_table" %}active{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Data search

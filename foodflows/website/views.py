@@ -452,6 +452,29 @@ def production_overview(request):
 
     return render(request, f"data/production.overview.html", context)
 
+@login_required
+def data_dqi(request):
+
+    cities = get_cities(request)
+    ratings = defaultdict(dict)
+
+    for each in cities:
+        ratings[each.id] = defaultdict(dict)
+
+    for each in DataQualityIndicator.objects.filter(data__city__in=cities):
+        ratings[each.data.city.id][each.indicator.indicator.name][each.data.activity.name] = each.indicator
+
+    context = {
+        "cities": cities,
+        "menu": "data",
+        "submenu": "dqi",
+        "indicators": Indicator.objects.all(),
+        "ratings": ratings,
+        "activities": Activity.objects.all(),
+    }
+
+    return render(request, f"data/dqi.html", context)
+
 
 @login_required
 def ideal_diet(request, page="table"):
