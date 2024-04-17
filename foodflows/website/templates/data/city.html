@@ -7,6 +7,9 @@
 {% block footer %}
 <script>
 
+// Create array to reference when downloading chart
+charts = {}
+
 // First foodsupply chart, based on what enters the food supply
 var foodsupply_dom = document.getElementById('foodsupply');
 var foodsupply_chart = echarts.init(foodsupply_dom);
@@ -112,6 +115,91 @@ consumption_options = {
 
 consumption_options && consumption_chart.setOption(consumption_options);
 
+// Sankey diagram
+
+var sankey = echarts.init(document.getElementById('sankey'));
+charts["sankey"] = sankey;
+
+var sankey_options = {
+  title: {
+    text: '{{ city }} Food System Sankey Diagram (kg/cap)'
+  },
+  tooltip: {
+    trigger: 'item',
+    triggerOn: 'mousemove'
+  },
+  series: [
+    {
+      type: 'sankey',
+      layout: 'none',
+      focusNodeAdjacency: 'allEdges',
+      data: [
+        {% for each in activities %}
+          {name: '{{ each }}', label:{show:true}}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ],
+      links: [
+        {% for each in sankey_data %}
+          {source: '{{ each.source__name }}', target: '{{ each.target__name }}', value: {% widthratio each.total each.population 1 %}}{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ],
+      lineStyle: {
+        normal: {
+          color: 'source',
+          curveness: 0.5
+        }
+      },
+      levels: [
+        {
+          depth: 0,
+          itemStyle: {
+            color: '#fbb4ae'
+          },
+          lineStyle: {
+            color: 'source',
+            opacity: 0.6
+          }
+        },
+        {
+          depth: 1,
+          itemStyle: {
+            color: '#b3cde3'
+          },
+          lineStyle: {
+            color: 'source',
+            opacity: 0.6
+          }
+        },
+        {
+          depth: 2,
+          itemStyle: {
+            color: '#ccebc5'
+          },
+          lineStyle: {
+            color: 'source',
+            opacity: 0.6
+          }
+        },
+        {
+          depth: 3,
+          itemStyle: {
+            color: '#decbe4'
+          },
+          lineStyle: {
+            color: 'source',
+            opacity: 0.6
+          }
+        }
+      ],
+      label: {
+        formatter: '{b}: {c}'
+      }
+    }
+  ]
+};
+
+sankey.setOption(sankey_options);
+
 </script>
 {% endblock %}
 
@@ -124,6 +212,13 @@ consumption_options && consumption_chart.setOption(consumption_options);
   </div>
 
   <div class="col-10">
+
+    <h1>{{ city }}</h1>
+
+    <div class="chart">
+      <div id="sankey" style="height:500px;width:100%"></div>
+      <a href="" title="Download" class="download" data-chart="sankey"><i class="bi bi-download"></i></a>
+    </div>
 
     <div class="row">
 

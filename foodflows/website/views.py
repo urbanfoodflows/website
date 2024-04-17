@@ -213,6 +213,17 @@ def data_city(request, id=None):
     foodsupply_exit = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, source__name="Food supply"), {"topten": True})
     consumption = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, target__name="Consumption"), {"topten": True})
 
+    sankey_data = Data.objects.filter(city=city, sankey=True).values("source__name", "target__name") \
+        .annotate(total=Sum("quantity")*1000).annotate(population=Subquery(POPULATION.values("population")[:1])).order_by()
+
+    activities = []
+    # We should create a list of all the activities as part of the sankey
+    for each in sankey_data:
+        if each["source__name"] not in activities:
+            activities.append(each["source__name"])
+        if each["target__name"] not in activities:
+            activities.append(each["target__name"])
+
     context = {
         "city": city,
         "menu": "data",
@@ -227,6 +238,8 @@ def data_city(request, id=None):
         "foodsupply_exit_total": per_capita_total(Data.objects.filter(city=city, sankey=True, source__name="Food supply")),
         "consumption": consumption,
         "consumption_total": per_capita_total(Data.objects.filter(city=city, sankey=True, target__name="Consumption")),
+        "activities": activities,
+        "sankey_data": sankey_data,
     }
 
     return render(request, "data/city.html", context)
