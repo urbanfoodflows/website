@@ -54,7 +54,7 @@
           emphasis: {
             focus: 'series'
           },
-          data: [{% for city in cities %}{% if totals_impact|get_item:city.id|get_item:each.name %}{{ totals_impact|get_item:city.id|get_item:each.name }}{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
+          data: [{% for city in cities %}{% if totals_impact|get_item:city.id|get_item:each.name %}{{ totals_impact|get_item:city.id|get_item:each.name|floatformat:"0" }}{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
           itemStyle: {
             color: '{{ each.color }}'
           }
@@ -113,7 +113,7 @@
           emphasis: {
             focus: 'series'
           },
-          data: [{% for city in cities %}{% if per_capita|get_item:city.id|get_item:each.name %}{{ per_capita|get_item:city.id|get_item:each.name }}{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
+          data: [{% for city in cities %}{% if per_capita|get_item:city.id|get_item:each.name %}{{ per_capita|get_item:city.id|get_item:each.name|floatformat:"0" }}{% else %}0{% endif %}{% if not forloop.last %},{% endif %}{% endfor %}],
           itemStyle: {
             color: '{{ each.color }}'
           }
