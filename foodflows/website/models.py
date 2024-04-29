@@ -174,12 +174,13 @@ class DataDescription(models.Model):
 class Indicator(models.Model):
     name = models.CharField(max_length=255)
     shortname = models.CharField(max_length=4, blank=True, null=True, help_text="This is shown in tables where space is tight. Normally 4 letters, all-caps.")
+    position = models.PositiveSmallIntegerField()
 
     def __str__(self):
         return self.name
 
     class Meta:
-        ordering = ["id"]
+        ordering = ["position"]
         db_table = "indicators"
 
 class IndicatorDescription(models.Model):
