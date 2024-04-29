@@ -143,6 +143,7 @@ def city(request, id):
         "activities": Activity.objects.all(),
         "indicators": Indicator.objects.all(),
         "ratings": ratings,
+        "menu": "data",
         "submenu": "description",
     }
 
@@ -717,6 +718,9 @@ def controlpanel_file(request, id):
             except Exception as e:
                 errors.append(f"We were unable to add row {i}. This is the error that came back: {e} is invalid.")
 
+        if not items:
+            errors.append(f"No data records were located in your file.")
+
         if not errors:
             Data.objects.filter(city=file.city).delete()
             try:
@@ -726,6 +730,9 @@ def controlpanel_file(request, id):
             except Exception as e:
                 errors.append(f"We were unable to save the data. This is the error that came back: {e}")
 
+        if errors:
+            for each in errors:
+                messages.error(request, each)
 
     context = {
         "controlpanel": True,
