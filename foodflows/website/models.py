@@ -194,11 +194,11 @@ class IndicatorDescription(models.Model):
     @property
     def color(self):
         colors = {
-            1: "#3e940e",
-            2: "#d6c521",
-            3: "#eab31d",
-            4: "#f0790d",
-            5: "#e23a3a",
+            1: "#57bb8a",
+            2: "#ffd666",
+            3: "#e7b96a",
+            4: "#ef9b6e",
+            5: "#e67c73",
         }
         return colors[self.rating]
 
