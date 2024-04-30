@@ -22,7 +22,7 @@
         <tr>
           <th class="w"></th>
           {% for each in activities %}
-            <th class="ell" title="{{ each }}">{% if request.GET.full %}{{each.name}}{% else %}{{ each.shortname }}{% endif %}</th>
+            <th class="ell" title="{{ each }}">{% if request.GET.full %}{{each.name}}{% else %}{{ each.name|truncatechars:10 }}{% endif %}</th>
           {% endfor %}
         </tr>
         </tr>

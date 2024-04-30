@@ -71,12 +71,12 @@
   </li>
   <li>
   {% if city and city.get_file %}
-    <a href="{{ city.get_file.file.url }}" class="nav-link">
+    <a href="{{ city.get_file.file.url }}" class="nav-link {% if not city %}disabled{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Download data
     </a>
   {% else %}
-    <a href="#" class="nav-link" disabled>
+    <a href="#" class="nav-link disabled">
       <i class="bi bi-arrow-right-circle"></i>
       Download data
     </a>

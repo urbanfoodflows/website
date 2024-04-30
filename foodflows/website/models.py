@@ -172,7 +172,7 @@ class DataDescription(models.Model):
             return None
 
     class Meta:
-        ordering = ["activity__name"]
+        ordering = ["activity__position"]
         db_table = "data_descriptions"
 
 class Indicator(models.Model):
