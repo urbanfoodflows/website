@@ -17,6 +17,11 @@ class ActivityAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     list_display = ["name", "position", "shortname", "is_active", "is_described", "has_dqi"]
 
+class DataDescriptionAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+    list_display = ["activity", "city"]
+    list_filter = ["activity", "city"]
+
 admin_site = MyAdminSite()
 
 admin_site.register(City)
@@ -28,3 +33,4 @@ admin_site.register(Data)
 admin_site.register(Indicator)
 admin_site.register(IndicatorDescription)
 admin_site.register(IdealConsumption)
+admin_site.register(DataDescription, DataDescriptionAdmin)
