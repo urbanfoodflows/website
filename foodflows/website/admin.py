@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import *
 from django.contrib.admin import AdminSite
+from django.contrib.auth.models import User, Group
 
 class MyAdminSite(AdminSite):
     # Text to put at the end of each page"s <title>.
@@ -34,3 +35,6 @@ admin_site.register(Indicator)
 admin_site.register(IndicatorDescription)
 admin_site.register(IdealConsumption)
 admin_site.register(DataDescription, DataDescriptionAdmin)
+
+admin_site.register(User)
+admin_site.register(Group)
