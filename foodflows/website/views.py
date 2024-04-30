@@ -140,7 +140,7 @@ def city(request, id):
     context = {
         "city": city,
         "descriptions": DataDescription.objects.filter(city_id=id),
-        "activities": Activity.objects.all(),
+        "activities": Activity.objects.filter(is_described=True),
         "indicators": Indicator.objects.all(),
         "ratings": ratings,
         "menu": "data",
@@ -244,6 +244,32 @@ def data_city(request, id=None):
     }
 
     return render(request, "data/city.html", context)
+
+@login_required
+def data_city_dqi(request, id=None):
+
+    if "cities" in request.GET:
+        return redirect("data_city_dqi", request.GET["cities"])
+    elif not id:
+        id = 1
+    city = City.objects.get(is_active=True, pk=id)
+
+    ratings = {}
+    for each in DataQualityIndicator.objects.filter(data__city=id):
+        if not each.indicator.indicator.name in ratings:
+            ratings[each.indicator.indicator.name] = {}
+        ratings[each.indicator.indicator.name][each.data.activity.name] = each.indicator
+
+    context = {
+        "city": city,
+        "activities": Activity.objects.filter(has_dqi=True),
+        "indicators": Indicator.objects.all(),
+        "ratings": ratings,
+        "menu": "data",
+        "submenu": "city_dqi",
+    }
+
+    return render(request, "data/city.dqi.html", context)
 
 @login_required
 def consumption(request, page="index"):
@@ -484,7 +510,7 @@ def data_dqi(request):
         "submenu": "dqi",
         "indicators": Indicator.objects.all(),
         "ratings": ratings,
-        "activities": Activity.objects.all(),
+        "activities": Activity.objects.filter(has_dqi=True),
     }
 
     return render(request, f"data/dqi.html", context)
@@ -788,7 +814,7 @@ def controlpanel_datadescription(request, city, id=None):
         "controlpanel": True,
         "city": City.objects.get(pk=city),
         "info": info,
-        "activities": Activity.objects.all(),
+        "activities": Activity.objects.filter(is_described=True),
         "indicators": indicators,
         "ratings": ratings,
         "descriptions": descriptions,
@@ -800,7 +826,7 @@ def controlpanel_datadescription(request, city, id=None):
 def controlpanel_activities(request):
     context = {
         "controlpanel": True,
-        "activities": Activity.objects.all(),
+        "activities": Activity.objects.filter(is_active=True),
     }
 
     return render(request, "controlpanel/activities.html", context)

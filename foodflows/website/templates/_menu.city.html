@@ -64,7 +64,7 @@
     </a>
   </li>
   <li>
-    <a href="{% if city %}{% url "city" city.id %}{% endif %}" data-id="dqi" class="showdiv nav-link {% if not city %}disabled{% endif %}">
+    <a href="{% if city %}{% url "data_city_dqi" city.id %}{% endif %}" class="nav-link {% if not city %}disabled{% endif %} {% if submenu == "city_dqi" %}active{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Data quality indicators
     </a>

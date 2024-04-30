@@ -3,6 +3,25 @@
 
 {% block title %}Data description{% endblock %}
 
+{% block header %}
+  <script type="text/javascript">
+  $(function(){
+    $("select[name=activity]").change(function(){
+      var selectedOption = $(this).find(":selected");
+      var dqi = selectedOption.data("dqi");
+      if (dqi == "True") {
+        $("section.dqi").show();
+      } else {
+        $("section.dqi").hide();
+        $('input[type="radio"]').prop('checked', false);
+        $("section.dqi input.desc").val("");
+      }
+    });
+    $("select[name=activity]").change();
+  });
+  </script>
+{% endblock %}
+
 {% block content %}
 
 <h1>{{ city }}: Data Description</h1>
@@ -14,7 +33,7 @@
     <select class="form-control" name="activity" required>
       <option></option>
       {% for each in activities %}
-        <option value="{{ each.id }}" {% if info.activity == each %}selected{% endif %}>{{ each }}</option>
+        <option data-dqi="{{ each.has_dqi }}" value="{{ each.id }}" {% if info.activity == each %}selected{% endif %}>{{ each }}</option>
       {% endfor %}
     </select>
   </div>
@@ -24,6 +43,7 @@
     <textarea name="description" rows="10" class="form-control" required>{{ info.description }}</textarea>
   </div>
 
+  <section class="dqi">
   <h2>Data Quality indicators</h2>
 
   {% for each in indicators %}
@@ -40,9 +60,11 @@
       {% endfor %}
     </ul>
 
-    <input class="mb-4 form-control" name="description_{{ each.id }}" placeholder="Justification (if not immediately apparent)" value="{{ descriptions|get_item:each.id }}" />
+    <input class="mb-4 desc form-control" name="description_{{ each.id }}" placeholder="Justification (if not immediately apparent)" value="{{ descriptions|get_item:each.id }}" />
 
   {% endfor %}
+
+  </section>
 
   <button type="submit" class="btn btn-success">Save</button>
   {% csrf_token %}

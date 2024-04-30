@@ -30,81 +30,37 @@
   </div>
 
   <div class="col-10">
-    <div class="showdiv" id="description">
-      {% for each in descriptions %}
-        <section class="mb-4">
-          <h3>{{ each.activity }}</h3>
-          {{ each.get_description }}
 
-          <h4>Data Quality Indicators</h4>
-            <table class="table">
-              {% for indicator in each.ratings.all %}
-                <tr>
-                  <th>{{ indicator.indicator.indicator }}</th>
-                  <td style="background:{{ indicator.indicator.color }}">{{ indicator.indicator.rating }}</th>
-                  <td>
-                  <small>
-                  {{ indicator.indicator.description }}
-                  {% if indicator.description %}
-                  <br>
-                  <strong>{{ indicator.description }}</strong>
-                  {% endif %}
-                  </small>
+    {% for each in descriptions %}
+      <section class="mb-5">
+        <h2>{{ each.activity }}</h2>
+        {{ each.get_description }}
 
-                  </td>
-                </tr>
-              {% endfor %}
-            </table>
-     
-        </section>
-      {% endfor %}
-    </div>
+        <h4>Data Quality Indicators</h4>
+          <table class="table">
+            {% for indicator in each.ratings.all %}
+              <tr>
+                <th>{{ indicator.indicator.indicator }}</th>
+                <td style="background:{{ indicator.indicator.color }}">{{ indicator.indicator.rating }}</th>
+                <td>
+                <small>
+                {{ indicator.indicator.description }}
+                {% if indicator.description %}
+                <br>
+                <strong>{{ indicator.description }}</strong>
+                {% endif %}
+                </small>
 
-    <div class="showdiv" id="dqi">
-
-      <h2>Data Quality Indicators</h2>
-        <table class="table" style="width:auto">
-          <tr>
-            <th class="w"></th>
-            {% for each in activities %}
-              <th class="ell" title="{{ each }}">{{ each }} </th>
+                </td>
+              </tr>
             {% endfor %}
-          </tr>
-          </tr>
-          {% for each in indicators %}
-            <tr>
-              <th class="w">{{ each }}</th>
-              {% for activity in activities %}
-                {% with rating=ratings|get_item:each|get_item:activity %}
-                  <td style="min-width:50px;background:{% if rating %}{{ rating.color }}{% else %}#000{% endif %}">
-                    {{ rating.rating }}
-                  </th>
-                {% endwith %}
-              {% endfor %}
-            </tr>
-          {% endfor %}
-        </table>
-     
-    </div>
+          </table>
+   
+      </section>
+    {% endfor %}
 
   </div>
 
 </div>
 
-{% endblock %}
-
-{% block footer %}
-    <script>
-    $(function(){
-      $("a.showdiv").click(function(e){
-        e.preventDefault();
-        box = $(this).data("id");
-        console.log(box);
-        $("div.showdiv").hide();
-        $("a.showdiv").removeClass("active");
-        $(this).addClass("active");
-        $("#" + box).show();
-      });
-    });
-</script>
 {% endblock %}

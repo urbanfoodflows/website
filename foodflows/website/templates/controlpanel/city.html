@@ -84,7 +84,7 @@ tr.status-deleted{display:none}
           <td>{{ each.year }}</td>
           <td>{{ each.population|intcomma }}</td>
           <td>{{ each.source|linebreaksbr|urlize }}</td>
-          <td><a href="?delete_population={{ each.id }}">Delete</a></td>
+          <td><a href="?delete_population={{ each.id }}" onclick="javascript:return confirm('Are you sure?')">Delete</a></td>
         </tr>
       {% endfor %}
     </table>

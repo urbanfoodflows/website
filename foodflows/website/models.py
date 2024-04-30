@@ -81,12 +81,16 @@ class Activity(models.Model):
     name = models.CharField(max_length=255)
     shortname = models.CharField(max_length=4, blank=True, null=True, help_text="This is shown in tables where space is tight. Normally 4 letters, all-caps.")
     description = MDTextField(null=True, blank=True)
+    is_active = models.BooleanField(db_index=True, default=True, help_text="Indicates if this is used for data recording")
+    is_described = models.BooleanField(db_index=True, default=True, help_text="Indicates if this is used for data descriptions")
+    has_dqi = models.BooleanField(db_index=True, default=True, help_text="Indicates if this activity can have DQIs")
+    position = models.PositiveSmallIntegerField(db_index=True)
 
     def __str__(self):
         return self.name
 
     class Meta:
-        ordering = ["name"]
+        ordering = ["position"]
         db_table = "activities"
         verbose_name_plural = "Activities"
 
