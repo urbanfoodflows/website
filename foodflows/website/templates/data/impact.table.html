@@ -76,9 +76,9 @@
       <tr>
         <th>Food Group</th>
         {% for city in cities %}
-          <th>Total consumption<br>{{ impact_type.unit_10k }}</th>
-          <th>Total <br>{{ impact_type.unit_10k }}</th>
-          <th>Per-capita <br>{{ impact_type.unit }}</th>
+          <th>Total<br>consumption<br>t</th>
+          <th>Total <br>{{ impact_type.title }}<br>{{ impact_type.unit_10k }}</th>
+          <th>Per-capita <br>{{ impact_type.title }}<br>{{ impact_type.unit }}</th>
         {% endfor %}
       </tr>
       </thead>

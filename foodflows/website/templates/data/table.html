@@ -53,7 +53,7 @@ $(function(){
 
       <select name="foodgroups" class="form-control mb-2" multiple>
         {% for each in foodgroups %}
-          <option value="{{ each.id }}" {% if each.id|slugify in request.GET.foodgroups %}selected{% endif %}>{{ each }}</option>
+          <option value="{{ each.id }}" {% if each.id|slugify in selected_foodgroups %}selected{% endif %}>{{ each }}</option>
         {% endfor %}
       </select>
 

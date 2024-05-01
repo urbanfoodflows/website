@@ -214,8 +214,11 @@ def data_city(request, id=None):
     foodsupply_exit = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, source__name="Food supply"), {"topten": True})
     consumption = per_capita_breakdown(Data.objects.filter(city=city, sankey=True, target__name="Consumption"), {"topten": True})
 
-    sankey_data = Data.objects.filter(city=city, sankey=True).values("source__name", "target__name") \
-        .annotate(total=Sum("quantity")*1000).annotate(population=Subquery(POPULATION.values("population")[:1])).order_by()
+    sankey_data = Data.objects.filter(city=city, sankey=True).values("source__name", "target__name")
+    if "sankey" in request.GET and request.GET["sankey"] == "total":
+        sankey_data = sankey_data.annotate(total=Sum("quantity"))
+    else:
+        sankey_data = sankey_data.annotate(total=Sum("quantity")*1000).annotate(population=Subquery(POPULATION.values("population")[:1])).order_by()
 
     activities = []
     # We should create a list of all the activities as part of the sankey
@@ -300,6 +303,99 @@ def consumption(request, page="index"):
     return render(request, f"data/consumption.{page}.html", context)
 
 @login_required
+def importexport_overview(request, type="imports"):
+
+    cities = get_cities(request)
+
+    if type == "imports":
+        production = Data.objects.filter(source__name="Imports")
+    else:
+        production = Data.objects.filter(target__name="Exports")
+
+    production = production.filter(sankey=True, city__in=cities) \
+        .filter(quantity__gt=0) \
+        .annotate(population=Subquery(POPULATION.values("population")[:1]))
+
+    totals = {}
+    per_capita = {}
+    colors = {}
+    for city in cities:
+        per_capita[city.id] = {}
+        totals[city.id] = {}
+
+    errors = []
+
+    for each in production:
+        quantity = each.quantity
+        foodgroup = each.food_group.name
+        food = each.food
+        population = each.population
+        city = each.city.id
+        if foodgroup not in totals[city]:
+            totals[city][foodgroup] = {}
+            per_capita[city][foodgroup] = {}
+            colors[foodgroup] = each.food_group.color
+        if population:
+            totals[city][foodgroup][food] = quantity
+            per_capita[city][foodgroup][food] = quantity/population*1000 #kg instead of t
+        else:
+            totals[city][foodgroup] = 0
+            per_capita[city][foodgroup] = 0
+            e = f"Not all population data is available - incomplete data for city #{city}. Removing this city from the list..."
+            if e not in errors:
+                errors.append(e)
+            cities = cities.exclude(pk=city)
+
+    if errors:
+        for each in errors:
+            messages.warning(request, each)
+
+    context = {
+        "totals": totals,
+        "per_capita": per_capita,
+        "cities": cities,
+        "menu": "data",
+        "submenu": type,
+        "page": "overview",
+        "foodgroups": FoodGroup.objects.all(),
+        "colors": colors,
+        "echarts": True,
+    }
+
+    return render(request, f"data/importexport.overview.html", context)
+
+@login_required
+def importexport(request, page="index", type="imports"):
+
+    cities = get_cities(request)
+    if type == "imports":
+        data = per_capita_breakdown(Data.objects.filter(city__in=cities, sankey=True, source__name="Imports"), {"include_city": True})
+    else:
+        data = per_capita_breakdown(Data.objects.filter(city__in=cities, sankey=True, target__name="Exports"), {"include_city": True})
+
+    # We create defaultdicts so we don't have to manually create all the dictionaries
+    totals = defaultdict(dict)
+    per_capita = defaultdict(dict)
+
+    for each in data:
+        totals[each["city_id"]][each["food_group__name"]] = each["total"]
+        per_capita[each["city_id"]][each["food_group__name"]] = each["per_capita"]
+
+    context = {
+        "cities": cities,
+        "menu": "data",
+        "submenu": type,
+        "page": page,
+        "table_bars": True,
+        "foodgroups": FoodGroup.objects.filter(is_human_food=True),
+        "totals": totals,
+        "per_capita": per_capita,
+        "echarts": True,
+    }
+
+    return render(request, f"data/importexport.{page}.html", context)
+
+@login_required
 def impact(request, page="index", impact_type="emissions"):
 
     if page == "table" and request.GET.get("impact_type"):
@@ -323,8 +419,8 @@ def impact(request, page="index", impact_type="emissions"):
         per_capita[each["city_id"]][each["food_group__name"]] = each["per_capita"]
 
     impact_types = {
-        "emissions": {"title": "GHG emissions", "unit": "kg CO2eq", "unit_10k": "t CO2eq"},
-        "land_use": {"title": "Land use", "unit": "m3", "unit_10k": "ha"},
+        "emissions": {"title": "GHG emissions", "unit": "kg CO₂eq", "unit_10k": "t CO₂eq"},
+        "land_use": {"title": "Land use", "unit": "m²", "unit_10k": "ha"},
         "water_use": {"title": "Freshwater withdrawals", "unit": "l", "unit_10k": "kl"},
     }
 
@@ -383,6 +479,7 @@ def data_table(request):
         "disable_city_picker": True,
         "menu": "data",
         "submenu": "data_table",
+        "selected_foodgroups": request.GET.getlist("foodgroups"),
     }
 
     return render(request, "data/table.html", context)

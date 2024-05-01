@@ -122,7 +122,7 @@ charts["sankey"] = sankey;
 
 var sankey_options = {
   title: {
-    text: '{{ city }} Food System Sankey Diagram (kg/cap)'
+    text: '{{ city }} Food System Sankey Diagram ({% if request.GET.sankey == "total" %}t{% else %}kg/cap{% endif %})'
   },
   tooltip: {
     trigger: 'item',
@@ -140,7 +140,11 @@ var sankey_options = {
       ],
       links: [
         {% for each in sankey_data %}
+          {% if request.GET.sankey == "total" %}
+          {source: '{{ each.source__name }}', target: '{{ each.target__name }}', value: {{ each.total }}}{% if not forloop.last %},{% endif %}
+          {% else %}
           {source: '{{ each.source__name }}', target: '{{ each.target__name }}', value: {% widthratio each.total each.population 1 %}}{% if not forloop.last %},{% endif %}
+          {% endif %}
         {% endfor %}
       ],
       lineStyle: {
@@ -192,13 +196,24 @@ var sankey_options = {
         }
       ],
       label: {
-        formatter: '{b}: {c}'
+        fontSize: 24, // Adjust the font size as needed
+        formatter: function (params) {
+            // Format the value with a thousands separator using US English locale
+            var formattedValue = params.value.toLocaleString('en-US');
+            // Concatenate the node name and formatted value
+            return params.name + ': ' + formattedValue;
+        }
       }
     }
   ]
 };
 
 sankey.setOption(sankey_options);
+
+$("select[name=sankey]").change(function(){
+  form = $(this).closest("form");
+  form.submit();
+});
 
 </script>
 {% endblock %}
@@ -214,6 +229,13 @@ sankey.setOption(sankey_options);
   <div class="col-10">
 
     <h1>{{ city }}</h1>
+
+    <form>
+      <select name="sankey" class="form-control mb-2" style="width:400px">
+        <option value="per_capita">Show per-capita quantity in sankey</option>
+        <option value="total" {% if request.GET.sankey == "total" %}selected{% endif %}>Show total quantity in sankey</option>
+      </select>
+    </form>
 
     <div class="chart">
       <div id="sankey" style="height:500px;width:100%"></div>

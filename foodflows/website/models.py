@@ -49,8 +49,8 @@ class Population(models.Model):
 class FoodGroup(models.Model):
     name = models.CharField(max_length=255)
     description = MDTextField(null=True, blank=True)
-    emissions = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, help_text="Average of GHG emissions per kilogram (Kg of CO2 equivalent)")
-    land_use = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Average of Land use per kilogram (m3)")
+    emissions = models.DecimalField(max_digits=4, decimal_places=2, null=True, blank=True, help_text="Average of GHG emissions per kilogram (Kg of CO₂ equivalent)")
+    land_use = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Average of Land use per kilogram (m²)")
     water_use = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="Average of Freshwater withdrawals per kilogram (liters)")
     notes_methodology = models.TextField(null=True, blank=True)
     ideal_consumption = models.PositiveSmallIntegerField(null=True, blank=True, help_text="Ideal per capita consumption (g/day)")

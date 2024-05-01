@@ -1,0 +1,92 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+{% load humanize %}
+
+{% block title %}{{ submenu|capfirst }} data - table{% endblock %}
+
+{% block footer %}
+<script>
+  $(document).ready(function() {
+    // Function to sum up numbers in an array
+    const sumNumbers = arr => arr.reduce((acc, val) => {
+      const num = parseFloat(val);
+      return isNaN(num) ? acc : acc + num;
+    }, 0);
+
+    // Loop through each column and calculate the sum
+    $('tfoot th:not(:first-child)').each(function() {
+      const columnClass = $(this).data('class'); // Get the class for the current column
+      let sum = 0;
+      $(`tbody tr td.${columnClass}`).each(function() {
+        const value = $(this).text().trim();
+        const num = parseFloat(value.replace(/,/g, '')); // Remove commas from numbers
+        if (!isNaN(num)) {
+          sum += num;
+        }
+      });
+      $(this).text(sum.toLocaleString('en-US', { maximumFractionDigits: 0 }));
+    });
+  });
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    {% include "data/_topmenu.importexport.html" %}
+
+    <h2>{{ submenu|capfirst }}</h2>
+
+    <table class="table table-striped">
+      <tr>
+        <th></th>
+        {% for city in cities %}
+          <th colspan="2">{{ city }}</th>
+        {% endfor %}
+      <tr>
+      <tr>
+        <th>Food Group</th>
+        {% for city in cities %}
+          <th>Total (t)</th>
+          <th>Per-capita (kg)</th>
+        {% endfor %}
+      <tr>
+      <tbody>
+      {% for each in foodgroups %}
+        <tr>
+          <td>
+            {{ each }}
+          </td>
+          {% for city in cities %}
+            {% if totals|get_item:city.id|get_item:each.name %}
+            <td class="c{{city.id}}A"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type={% if submenu == "imports" %}source{% else %}target{% endif %}&amp;activity={{ submenu|capfirst }}&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ totals|get_item:city.id|get_item:each.name|intcomma }}</a></td>
+            <td class="c{{city.id}}B"><a href="{% url "data_table" %}?cities={{ city.id }}&amp;type=target&amp;activity={{ submenu|capfirst }}&amp;sankey=true&amp;foodgroups={{ each.id }}">{{ per_capita|get_item:city.id|get_item:each.name|floatformat:1 }}</a></td>
+            {% else %}
+              <td colspan="2"></td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <th>Total</th>
+          {% for city in cities %}
+            <th data-class="c{{city.id}}A"></th>
+            <th data-class="c{{city.id}}B"></th>
+          {% endfor %}
+      </tfoot>
+    </table>
+    
+  </div>
+
+</div>
+
+{% endblock %}

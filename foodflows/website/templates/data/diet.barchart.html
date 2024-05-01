@@ -11,6 +11,9 @@ var chart = echarts.init(document.getElementById('chart'));
 charts["chart"] = chart;
 
 var option = {
+  textStyle: {
+      fontSize: 18,
+  },
   title: {
     text: 'Ideal diet analysis',
     left: 'center'
@@ -23,10 +26,22 @@ var option = {
   },
   legend: {
     data: [{% for each in ideal %}'{{ each }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
-    top: 30
+    orient: 'vertical',
+    left: 'right',
+    top: 'middle'
+  },
+  grid: {
+      left: '10%',
+      right: '20%',
+      top: '10%',
+      bottom: '10%',
+      containLabel: true
   },
   xAxis: {
     type: 'category',
+    axisLabel: {
+      fontSize: 18,
+    },
     splitArea: {
         show: true,
         areaStyle: {
@@ -38,7 +53,11 @@ var option = {
   yAxis: {
     type: 'value',
     name: 'g/day',
+    nameTextStyle: {
+        fontSize: 18,
+    },
     axisLabel: {
+      fontSize: 18,
       formatter: '{value} %'
     }
   },

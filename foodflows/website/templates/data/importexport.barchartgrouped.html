@@ -1,0 +1,164 @@
+{% extends "_base.html" %}
+{% load foodflows_extras %}
+
+{% block title %}{{ submenu|capfirst }} - grouped bar chart{% endblock %}
+
+{% block footer %}
+<script type="text/javascript">
+
+var charts = {}
+
+var chart = echarts.init(document.getElementById('chart'));
+charts["chart"] = chart; // Store the object so we can retrieve it when clicking download link
+
+var categories = [{% for each in foodgroups %}'{{ each }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+var seriesData = [{% for city in cities %}{
+  name: '{{ city|safe }}',
+  type: 'bar',
+  color: '{{ city.color }}',
+  data: [{% for each in foodgroups %}{{ totals|get_item:city.id|get_item:each.name|floatformat:1 }}{% if not forloop.last %},{% endif %}{% endfor %}]
+  }{% if not forloop.last %},{% endif %}{% endfor %}
+] 
+var option = {
+  title: {
+    text: 'Total {{ submenu }} (t)',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    } 
+  },
+  legend: {
+    data: [{% for each in cities %}'{{ each }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    top: 30
+  },
+  xAxis: {
+    type: 'category',
+    data: categories,
+    splitArea: {
+        show: true,
+        areaStyle: {
+            color: ['rgba(0, 0, 0, 0.06)','transparent']
+        }
+    },
+    axisLabel: {
+        interval: 0, // Show all labels
+        formatter: function (value) {
+            // Customize label to truncate with ellipsis
+            var maxLength = 7; // Maximum characters to display
+            if (value.length > maxLength) {
+                return value.substring(0, maxLength) + '...';
+            } else {
+                return value;
+            }
+        }
+    }
+  },
+  yAxis: {
+    type: 'value',
+    name: 't/year',
+    axisLabel: {
+      formatter: '{value} t'
+    }
+  },
+  series: seriesData,
+};
+
+chart.setOption(option);
+
+// Now the same for the per-capita chart
+var chart_per_cap = echarts.init(document.getElementById('chart_per_cap'));
+charts["chart_per_cap"] = chart_per_cap; // Store the object so we can retrieve it when clicking download link
+
+var categories = [{% for each in foodgroups %}'{{ each }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+var seriesData = [{% for city in cities %}{
+    name: '{{ city|safe }}',
+    type: 'bar',
+    color: '{{ city.color }}',
+    data: [{% for each in foodgroups %}{{ per_capita|get_item:city.id|get_item:each.name|floatformat:1 }}{% if not forloop.last %},{% endif %}{% endfor %}]
+  }{% if not forloop.last %},{% endif %}{% endfor %}
+]
+
+var option_per_cap = {
+  title: {
+    text: 'Per-capita {{ submenu }} (kg)',
+    left: 'center'
+  },
+  tooltip: {
+    trigger: 'axis',
+    axisPointer: {
+      type: 'shadow'
+    } 
+  },
+  legend: {
+    data: [{% for each in cities %}'{{ each }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    top: 30
+  },
+  xAxis: {
+    type: 'category',
+    data: categories,
+    splitArea: {
+        show: true,
+        areaStyle: {
+            color: ['rgba(0, 0, 0, 0.06)','transparent']
+        }
+    },
+    axisLabel: {
+        interval: 0, // Show all labels
+        formatter: function (value) {
+            // Customize label to truncate with ellipsis
+            var maxLength = 7; // Maximum characters to display
+            if (value.length > maxLength) {
+                return value.substring(0, maxLength) + '...';
+            } else {
+                return value;
+            }
+        }
+    }
+  },
+  yAxis: {
+    type: 'value',
+    name: 'kg/year',
+    axisLabel: {
+      formatter: '{value} kg'
+    }
+  },
+  series: seriesData
+};
+
+chart_per_cap.setOption(option_per_cap);
+
+</script>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+
+  <div class="col-2 p-3 bg-body-tertiary">
+    {% include "_menu.city.html" %}
+  </div>
+
+  <div class="col-10">
+
+    {% include "data/_topmenu.importexport.html" %}
+
+    <h2>{{ submenu|capfirst }}</h2>
+
+    <div class="chart">
+      <a href="" title="Download" class="download" data-chart="chart"><i class="bi bi-download"></i></a>
+      <span id='chart' style='width: 100%; height: 850px; display: inline-block'></span>
+    </div>
+
+    <div class="chart">
+      <a href="" title="Download" class="download" data-chart="chart_per_cap"><i class="bi bi-download"></i></a>
+      <span id='chart_per_cap' style='width: 100%; height: 850px; display: inline-block'></span>
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}
