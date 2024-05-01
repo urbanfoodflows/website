@@ -29,7 +29,7 @@
                 itemStyle: { color: '{{ colors|get_item:key }}' }, // Custom color for Group 1
                 children: [
                     {% for food in totals|get_item:each.id|get_item:key %}
-                    { name: '{{ food }}', value: {{ totals|get_item:each.id|get_item:key|get_item:food }} },
+                    { name: '{{ food|escapejs }}', value: {{ totals|get_item:each.id|get_item:key|get_item:food }} },
                     {% endfor %}
                 ]
             },

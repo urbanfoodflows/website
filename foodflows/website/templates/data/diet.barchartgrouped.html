@@ -27,7 +27,7 @@ var option = {
   },
   xAxis: {
     type: 'category',
-    data: [{% for each in ideal %}'{{ each }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+    data: [{% for each in ideal %}'{{ each|safe }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
     splitArea: {
         show: true,
         areaStyle: {
