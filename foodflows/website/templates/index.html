@@ -60,12 +60,14 @@
               Data Download
             </a>
           </li>
-          <li>
-            <a class="icon-link mb-1" href="{% url "controlpanel" %}">
-              <i class="bi bi-arrow-right-circle"></i>
-              Control Panel
-            </a>
-          </li>
+          {% if request.user.is_staff %}
+            <li>
+              <a class="icon-link mb-1" href="{% url "controlpanel" %}">
+                <i class="bi bi-arrow-right-circle"></i>
+                Control Panel
+              </a>
+            </li>
+          {% endif %}
         </ul>
       </div>
     </div>

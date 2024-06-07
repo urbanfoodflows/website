@@ -703,7 +703,7 @@ def chart(request):
 #
 #
 
-@login_required
+@staff_member_required
 def controlpanel(request):
     context = {
         "controlpanel": True,
@@ -712,7 +712,7 @@ def controlpanel(request):
 
     return render(request, "controlpanel/index.html", context)
 
-@login_required
+@staff_member_required
 def controlpanel_city(request, id):
     city = City.objects.get(pk=id)
 
@@ -754,7 +754,7 @@ def controlpanel_city(request, id):
 
     return render(request, "controlpanel/city.html", context)
 
-@login_required
+@staff_member_required
 def controlpanel_file(request, id):
     file = DataFile.objects.get(pk=id)
 
@@ -869,7 +869,7 @@ def controlpanel_file(request, id):
 
     return render(request, "controlpanel/file.html", context)
 
-@login_required
+@staff_member_required
 def controlpanel_datadescription(request, city, id=None):
 
     info = None
@@ -919,7 +919,7 @@ def controlpanel_datadescription(request, city, id=None):
 
     return render(request, "controlpanel/datadescription.html", context)
 
-@login_required
+@staff_member_required
 def controlpanel_activities(request):
     context = {
         "controlpanel": True,
@@ -928,7 +928,7 @@ def controlpanel_activities(request):
 
     return render(request, "controlpanel/activities.html", context)
 
-@login_required
+@staff_member_required
 def controlpanel_foodgroups(request):
     context = {
         "controlpanel": True,

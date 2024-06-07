@@ -201,7 +201,11 @@ var sankey_options = {
             // Format the value with a thousands separator using US English locale
             var formattedValue = params.value.toLocaleString('en-US');
             // Concatenate the node name and formatted value
-            return params.name + ': ' + formattedValue;
+            {% if request.GET.sankey == "no_numbers" %}
+              return params.name;
+            {% else %}
+              return params.name + ': ' + formattedValue;
+            {% endif %}
         }
       }
     }
@@ -234,6 +238,7 @@ $("select[name=sankey]").change(function(){
       <select name="sankey" class="form-control mb-2" style="width:400px">
         <option value="per_capita">Show per-capita quantity in sankey</option>
         <option value="total" {% if request.GET.sankey == "total" %}selected{% endif %}>Show total quantity in sankey</option>
+        <option value="no_numbers" {% if request.GET.sankey == "no_numbers" %}selected{% endif %}>Hide numbers in sankey</option>
       </select>
     </form>
 
