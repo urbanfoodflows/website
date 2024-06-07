@@ -705,6 +705,12 @@ def chart(request):
 
 @staff_member_required
 def controlpanel(request):
+
+    # Temp code for test user
+    if request.user.id == 4:
+        return redirect("/")
+    # End temp code
+
     context = {
         "controlpanel": True,
         "cities": City.objects.all(),
