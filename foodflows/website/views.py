@@ -100,8 +100,6 @@ def get_cities(request, include_sample_city=False):
 #   END OF CENTRAL FUNTIONS        
 ####################################
 
-
-@login_required
 def index(request):
 
     context = {
@@ -110,7 +108,6 @@ def index(request):
 
     return render(request, "index.html", context)
 
-@login_required
 def dqi(request):
 
     context = {
@@ -122,7 +119,6 @@ def dqi(request):
 
     return render(request, "dqi.html", context)
 
-@login_required
 def city(request, id):
 
     if "cities" in request.GET:
@@ -153,7 +149,6 @@ def city(request, id):
 #   DATA PORTAL VIEWS
 ####################################
 
-@login_required
 def data(request):
 
     cities = get_cities(request)
@@ -201,7 +196,6 @@ def data(request):
 
     return render(request, "data/index.html", context)
 
-@login_required
 def data_city(request, id=None):
 
     if "cities" in request.GET:
@@ -248,7 +242,6 @@ def data_city(request, id=None):
 
     return render(request, "data/city.html", context)
 
-@login_required
 def data_city_dqi(request, id=None):
 
     if "cities" in request.GET:
@@ -274,7 +267,6 @@ def data_city_dqi(request, id=None):
 
     return render(request, "data/city.dqi.html", context)
 
-@login_required
 def consumption(request, page="index"):
 
     cities = get_cities(request)
@@ -302,7 +294,6 @@ def consumption(request, page="index"):
 
     return render(request, f"data/consumption.{page}.html", context)
 
-@login_required
 def importexport_overview(request, type="imports"):
 
     cities = get_cities(request)
@@ -364,7 +355,6 @@ def importexport_overview(request, type="imports"):
 
     return render(request, f"data/importexport.overview.html", context)
 
-@login_required
 def importexport(request, page="index", type="imports"):
 
     cities = get_cities(request)
@@ -395,7 +385,6 @@ def importexport(request, page="index", type="imports"):
 
     return render(request, f"data/importexport.{page}.html", context)
 
-@login_required
 def impact(request, page="index", impact_type="emissions"):
 
     if page == "table" and request.GET.get("impact_type"):
@@ -441,7 +430,6 @@ def impact(request, page="index", impact_type="emissions"):
 
     return render(request, f"data/impact.{page}.html", context)
 
-@login_required
 def data_table(request):
 
     cities = get_cities(request)
@@ -484,7 +472,6 @@ def data_table(request):
 
     return render(request, "data/table.html", context)
 
-@login_required
 def production(request, page="table"):
 
     cities = get_cities(request)
@@ -532,7 +519,6 @@ def production(request, page="table"):
 
     return render(request, f"data/production.{page}.html", context)
 
-@login_required
 def production_overview(request):
 
     cities = get_cities(request)
@@ -589,7 +575,6 @@ def production_overview(request):
 
     return render(request, f"data/production.overview.html", context)
 
-@login_required
 def data_dqi(request):
 
     cities = get_cities(request)
@@ -613,7 +598,6 @@ def data_dqi(request):
     return render(request, f"data/dqi.html", context)
 
 
-@login_required
 def ideal_diet(request, page="table"):
 
     cities = get_cities(request)
@@ -686,7 +670,6 @@ def ideal_diet(request, page="table"):
 
     return render(request, f"data/diet.{page}.html", context)
 
-@login_required
 def chart(request):
 
     context = {
