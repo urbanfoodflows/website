@@ -9,10 +9,10 @@
     <div class="collapse navbar-collapse">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/">Home</a>
+          <a class="nav-link {% if not menu or menu == "index" %}active{% endif %}" aria-current="page" href="/">Home</a>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown" aria-expanded="false">Cities</a>
+          <a class="nav-link dropdown-toggle {% if menu == "data" %}active{% endif %}" href="#" data-bs-toggle="dropdown" aria-expanded="false">Cities</a>
           <ul class="dropdown-menu">
             {% for each in CITIES %}
               <li><a class="dropdown-item" href="/data/city/{{ each.id }}/">{{ each }}</a></li>
@@ -23,11 +23,11 @@
           <a class="nav-link" href="/data/">Data Dashboard</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/">About</a>
+          <a class="nav-link {% if menu == "about" %}active{% endif %}" href="/about/">About</a>
         </li>
       </ul>
       
-      <form class="form-inline my-2 my-lg-0">
+      <form class="form-inline my-2 my-lg-0" hidden>
         <a class="nav-link" href="/">Log In</a>
       </form>
 

@@ -6,8 +6,9 @@
 
     <h1 class="text-body-emphasis">Getting started</h1>
     <p class="fs-5 col-md-8">
-      We provide a data visualization dashboard, developed in a platform called Preset, where our urban food 
-      flows data can be explored. Go to our Preset dashboard to view our data.
+      We provide an open source data visualization dashboard, where our urban food 
+      flows data can be explored. Select a city below or compare data from all cities
+      at once in our online dashboard.
     </p>
 
     <div class="mb-5">
@@ -37,13 +38,13 @@
         <p>Learn more about this initiative, and how you can contribute data for your own city.</p>
         <ul class="list-unstyled ps-0">
           <li>
-            <a class="icon-link mb-1" href="/">
+            <a class="icon-link mb-1" href="{% url "about" %}">
               <i class="bi bi-arrow-right-circle"></i>
               About Urban Food Flows
             </a>
           </li>
           <li>
-            <a class="icon-link mb-1" href="/">
+            <a class="icon-link mb-1" href="{% url "contributing" %}">
               <i class="bi bi-arrow-right-circle"></i>
               Contribute your own data
             </a>
@@ -55,7 +56,7 @@
             </a>
           </li>
           <li>
-            <a class="icon-link mb-1" href="/">
+            <a class="icon-link mb-1" href="/data/sources/">
               <i class="bi bi-arrow-right-circle"></i>
               Data Download
             </a>

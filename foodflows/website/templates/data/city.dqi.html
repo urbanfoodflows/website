@@ -3,6 +3,14 @@
 
 {% block title %}{{ city }} | Urban Food Flows{% endblock %}
 
+{% block header %}
+  <style>
+    table.dqi th:first-child {
+      width: 50px;
+    }
+  </style>
+{% endblock %}
+
 {% block content %}
 
 <div class="row">
@@ -13,28 +21,56 @@
 
   <div class="col-10">
       <h2>Data Quality Indicators</h2>
-        <table class="table" style="width:auto">
+
+      <table class="table" style="width:auto">
+        <tr>
+          <th class="w"></th>
+          {% for each in activities %}
+            <th class="ell" title="{{ each }}">{{ each|truncatechars:10 }} </th>
+          {% endfor %}
+        </tr>
+        </tr>
+        {% for each in indicators %}
           <tr>
-            <th class="w"></th>
-            {% for each in activities %}
-              <th class="ell" title="{{ each }}">{{ each|truncatechars:10 }} </th>
+            <th class="w">{{ each }}</th>
+            {% for activity in activities %}
+              {% with rating=ratings|get_item:each|get_item:activity %}
+                <td style="min-width:50px;background:{% if rating %}{{ rating.color }}{% else %}#000{% endif %}">
+                  {{ rating.rating }}
+                </th>
+              {% endwith %}
             {% endfor %}
           </tr>
-          </tr>
-          {% for each in indicators %}
+        {% endfor %}
+      </table>
+
+      <h2 class="mt-5">About our Data Quality Indicators</h2>
+
+      {{ page.get_content }}
+
+      {% for each in dqi %}
+
+        <h2 class="mt-4">{{ each }}</h2>
+
+        <table class="table table-striped dqi">
+          <thead>
             <tr>
-              <th class="w">{{ each }}</th>
-              {% for activity in activities %}
-                {% with rating=ratings|get_item:each|get_item:activity %}
-                  <td style="min-width:50px;background:{% if rating %}{{ rating.color }}{% else %}#000{% endif %}">
-                    {{ rating.rating }}
-                  </th>
-                {% endwith %}
-              {% endfor %}
+              <th scope="col">Rating</th>
+              <th scope="col">Description</th>
             </tr>
-          {% endfor %}
+          </thead>
+          <tbody>
+            {% for rating in each.ratings.all %}
+            <tr>
+              <th scope="row">{{ rating.rating }}</th>
+              <td>{{ rating.description }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
         </table>
-     
+
+      {% endfor %}
+
   </div>
 
 </div>

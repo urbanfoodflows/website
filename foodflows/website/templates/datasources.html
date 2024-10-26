@@ -1,0 +1,46 @@
+{% extends "_base.html" %}
+
+{% block title %}{{ info }} | Urban Food Flows{% endblock %}
+
+{% block content %}
+
+  {% if city %}
+    <div class="row">
+      <div class="col-2 p-3 bg-body-tertiary">
+        {% include "_menu.city.html" %}
+      </div>
+
+      <div class="col-10">
+  {% endif %}
+  
+  <h1>{{ info }}</h1>
+
+  {{ info.get_content }}
+
+  {% if city %}
+
+      Click the button below to download the master spreadsheet for <strong>{{ city }}</strong>:
+      <br>
+      <br>
+      <a href="{{ city.get_file.file.url }}" class="btn btn-large btn-success">
+        <i class="fa fa-download"></i> Download data (master spreadsheet)
+      </a>
+
+      </div>
+    </div>
+
+  {% else %}
+
+    Use the links below to download the master spreadsheet for any of the cities in our platform:
+
+  <ul class="mt-3">
+    {% for each in all_cities %}
+      {% if each.get_file %}
+        <li><a href="{{ each.get_file.file.url }}">{{ each }}</a></li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  {% endif %}
+
+{% endblock %}

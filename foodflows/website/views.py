@@ -108,6 +108,32 @@ def index(request):
 
     return render(request, "index.html", context)
 
+def page(request, slug):
+
+    context = {
+        "menu": slug,
+        "info": Page.objects.get(slug=slug),
+        "remove_full_width": True,
+    }
+
+    return render(request, "page.html", context)
+
+def data_sources(request):
+
+    context = {
+        "menu": "data",
+        "info": Page.objects.get(slug="datasources"),
+        "remove_full_width": True,
+        "all_cities": City.objects.filter(is_active=True),
+        "submenu": "datasources",
+    }
+
+    if "cities" in request.GET:
+        context["remove_full_width"] = False
+        context["city"] = City.objects.get(is_active=True, pk=request.GET["cities"])
+
+    return render(request, "datasources.html", context)
+
 def dqi(request):
 
     context = {
@@ -263,6 +289,10 @@ def data_city_dqi(request, id=None):
         "ratings": ratings,
         "menu": "data",
         "submenu": "city_dqi",
+
+        "page": Page.objects.get(slug="dqi"),
+        "dqi": Indicator.objects.all(),
+
     }
 
     return render(request, "data/city.dqi.html", context)
