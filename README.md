@@ -2,11 +2,14 @@ This repository contains the source code of [The Urban Food Flows website](https
 
 The following technologies are used:
 
-- Django 5
-- Python 3
+- Django
 - PostgreSQL 
 - Docker
+- Apache ECharts
+- Google Charts
 
-If you are able to assist as a designer or front-end developer with the visual elements of our website then please get in touch!
+If you are able to assist as a designer or front-end developer with the visual elements of our website then please get in touch! We also welcome people that want to suggest new features or report bugs - feel free to use Github to [report new issues](https://github.com/urbanfoodflows/website/issues) or [contact us](https://urbanfoodflows.net/about/).
 
-The Urban Food Flows website is currently unavailable to the public, until the papers that describe the datasets that are being presented on the website have been published.
+In order to draw more attention to urban food flows, we developed this online, open source data dashboard that presents visualizations of different food systems. This work accompanies the following paper:
+
+[Data requirements for a systematic analysis of urban food flows and their sustainability outcomes](https://doi.org/10.1177/23998083241298431), *Environment and Planning B: Urban Analytics and City Science* (2024).  L. Guibrunet, P. Hoekman, A. Bortolotti, J. Battersby-Lennard.
