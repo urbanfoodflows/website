@@ -1,14 +1,15 @@
-
   <div class="bg-body-tertiary mb-3">
-    <ul class="nav nav-pills mb-auto text-center">
+    <ul class="nav nav-tabs mb-auto text-center">
       <li>
-        <a href="{% url "consumption_barchartgrouped" %}?{{ request.GET.urlencode }}" title="Grouped bar charts" class="nav-link {% if page == "barchartgrouped" %}active{% endif %} py-3 border-bottom rounded-0">
+        <a href="{% url "consumption_barchartgrouped" %}?{{ request.GET.urlencode }}" title="Grouped bar charts" class="nav-link {% if page == "barchartgrouped" %}active{% endif %} py-3 ">
           <i class="bi bi-bar-chart-fill"></i>
+          Overview
         </a>
       </li>
       <li class="nav-item">
-        <a href="{% url "consumption_table" %}?{{ request.GET.urlencode }}" title="Table" class="nav-link {% if page == "table" %}active{% endif %} py-3 border-bottom rounded-0">
+        <a href="{% url "consumption_table" %}?{{ request.GET.urlencode }}" title="Table" class="nav-link {% if page == "table" %}active{% endif %} py-3 ">
           <i class="bi bi-table"></i>
+          Table
         </a>
       </li>
     </ul>

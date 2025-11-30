@@ -2,7 +2,7 @@
   <h4>Cities</h4>
 
   {% if city %}
-      <select class="form-control" name="instant_city">
+      <select class="form-select" name="instant_city" aria-label="Select city">
         {% for each in CITIES %}
           <option value="{{ each.id }}" {% if each in cities or each == city %}selected{% endif %}>{{ each }}</option>
         {% endfor %}
@@ -31,7 +31,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <select class="form-control" name="cities" {% if not city %}multiple{% endif %} required>
+          <select class="form-select" name="cities" {% if not city %}multiple{% endif %} required>
             {% for each in CITIES %}
               <option value="{{ each.id }}" {% if each in cities or each == city %}selected{% endif %}>{{ each }}</option>
             {% endfor %}

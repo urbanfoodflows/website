@@ -1,19 +1,22 @@
 
   <div class="bg-body-tertiary mb-3">
-    <ul class="nav nav-pills mb-auto text-center">
+    <ul class="nav nav-tabs mb-auto text-center">
       <li>
-        <a href="{% url "production" %}?{{ request.GET.urlencode }}" title="Overview" class="nav-link {% if page == "overview" %}active{% endif %} py-3 border-bottom rounded-0">
+        <a href="{% url "production" %}?{{ request.GET.urlencode }}" title="Overview" class="nav-link {% if page == "overview" %}active{% endif %} py-3 ">
           <i class="bi bi-columns"></i>
+          Overview
         </a>
       </li>
       <li>
-        <a href="{% url "production_comparison" %}?{{ request.GET.urlencode }}" title="Single comparison" class="nav-link {% if page == "comparison" %}active{% endif %} py-3 border-bottom rounded-0">
+        <a href="{% url "production_comparison" %}?{{ request.GET.urlencode }}" title="Single comparison" class="nav-link {% if page == "comparison" %}active{% endif %} py-3 ">
           <i class="bi bi-bar-chart-steps"></i>
+          Single comparison
         </a>
       </li>
       <li class="nav-item">
-        <a href="{% url "production_table" %}?{{ request.GET.urlencode }}" title="Table" class="nav-link {% if page == "table" %}active{% endif %} py-3 border-bottom rounded-0">
+        <a href="{% url "production_table" %}?{{ request.GET.urlencode }}" title="Table" class="nav-link {% if page == "table" %}active{% endif %} py-3 ">
           <i class="bi bi-table"></i>
+          Table
         </a>
       </li>
     </ul>

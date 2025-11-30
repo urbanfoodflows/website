@@ -45,13 +45,13 @@ $(function(){
     <h2>Data search</h2>
 
     <form class="mb-3">
-      <select class="form-control mb-2" name="cities" multiple required>
+      <select class="form-select mb-2" name="cities" multiple required>
         {% for each in CITIES %}
           <option value="{{ each.id }}" {% if each in cities %}selected{% endif %}>{{ each }}</option>
         {% endfor %}
       </select>
 
-      <select name="foodgroups" class="form-control mb-2" multiple>
+      <select name="foodgroups" class="form-select mb-2" multiple>
         {% for each in foodgroups %}
           <option value="{{ each.id }}" {% if each.id|slugify in selected_foodgroups %}selected{% endif %}>{{ each }}</option>
         {% endfor %}
@@ -60,20 +60,20 @@ $(function(){
       <div class="row">
 
         <div class="col-auto">
-          <select name="type" class="form-control">
+          <select name="type" class="form-select">
             <option value="source" {% if request.GET.type == "source" %}selected{% endif %}>Source</option>
             <option value="target" {% if request.GET.type == "target" %}selected{% endif %}>Target</option>
           </select>
         </div>
         <div class="col-auto">
-          <select name="activity" class="form-control">
+          <select name="activity" class="form-select">
             {% for each in activities %}
               <option value="{{ each }}" {% if each.name == request.GET.activity %}selected{% endif %}>{{ each }}</option>
             {% endfor %}
           </select>
         </div>
         <div class="col-auto">
-          <select name="sankey" class="form-control">
+          <select name="sankey" class="form-select">
             <option value="true" {% if request.GET.sankey == "true" %}selected{% endif %}>Sankey data only</option>
             <option value="" {% if not request.GET.sankey %}selected{% endif %}>All data</option>
           </select>

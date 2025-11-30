@@ -235,7 +235,7 @@ $("select[name=sankey]").change(function(){
     <h1>{{ city }}</h1>
 
     <form>
-      <select name="sankey" class="form-control mb-2" style="width:400px">
+      <select name="sankey" class="form-select mb-2" style="width:400px">
         <option value="per_capita">Show per-capita quantity in sankey</option>
         <option value="total" {% if request.GET.sankey == "total" %}selected{% endif %}>Show total quantity in sankey</option>
         <option value="no_numbers" {% if request.GET.sankey == "no_numbers" %}selected{% endif %}>Hide numbers in sankey</option>
