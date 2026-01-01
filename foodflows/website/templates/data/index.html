@@ -17,9 +17,11 @@
   var consumption_{{ city.id }}_chart = echarts.init(consumption_{{ city.id }}_dom);
   var consumption_{{ city.id }}_options;
 
-  var consumption_{{ city.id }}_other = {{ consumption_total|get_item:city.id }};
+  {% if consumption_total|get_item:city.id %}
+    var consumption_{{ city.id }}_other = {{ consumption_total|get_item:city.id }};
+  {% endif %}
   {% for each in consumption_data|get_item:city.id %}
-  consumption_{{ city.id }}_other -= {{ each.per_capita|default_if_none:0 }};
+    consumption_{{ city.id }}_other -= {{ each.per_capita|default_if_none:0 }};
   {% endfor %}
 
   consumption_{{ city.id }}_options = {
@@ -55,9 +57,11 @@
   var emissions_{{ city.id }}_chart = echarts.init(emissions_{{ city.id }}_dom);
   var emissions_{{ city.id }}_options;
 
-  var emissions_{{ city.id }}_other = {{ emissions_total|get_item:city.id }};
+  {% if emissions_total|get_item:city.id %}
+    var emissions_{{ city.id }}_other = {{ emissions_total|get_item:city.id }};
+  {% endif %}
   {% for each in emissions_data|get_item:city.id %}
-  emissions_{{ city.id }}_other -= {{ each.per_capita|default_if_none:0 }};
+    emissions_{{ city.id }}_other -= {{ each.per_capita|default_if_none:0 }};
   {% endfor %}
 
   emissions_{{ city.id }}_options = {

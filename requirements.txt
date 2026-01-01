@@ -1,5 +1,5 @@
-Django==5.2.8
-psycopg2
+Django==5.2.9
+psycopg2-binary
 pandas
 openpyxl
 markdown
