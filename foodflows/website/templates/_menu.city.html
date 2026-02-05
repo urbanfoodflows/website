@@ -52,7 +52,7 @@
 <h4 class="mt-3">Single-city data</h4>
 <ul class="nav nav-pills flex-column mb-auto">
   <li>
-    <a href="{% url "data_city" %}?{{ request.GET.urlencode }}" class="nav-link {% if submenu == "city" %}active{% endif %}">
+    <a href="{% if city %}{% url "data_city" city.id %}{% else %}{% url "data_city" %}?{{ request.GET.urlencode }}{% endif %}" class="nav-link {% if submenu == "city" %}active{% endif %}">
       <i class="bi bi-arrow-right-circle"></i>
       Data homepage
     </a>

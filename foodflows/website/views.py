@@ -776,13 +776,14 @@ def controlpanel_city(request, id):
 @staff_member_required
 def controlpanel_file(request, id):
     file = DataFile.objects.get(pk=id)
+    errors = []
+    info = {}
+    df = None
 
     try:
         df = pd.read_excel(file.file)
         df.dropna(how="all", inplace = True)
         column_count = len(df.columns)
-        errors = []
-        info = {}
         info["columns"] = column_count
         info["origins"] = df["Origin"].unique()
         info["destinations"] = df["Destination"].unique()
@@ -790,13 +791,14 @@ def controlpanel_file(request, id):
 
         if column_count != 9:
             errors.append("The number of columns is " + str(column_count) + ". However, we expect 9 columns. Please review.")
+
+        empty_food_names = df[df["Food name"].isna()]
+        if len(empty_food_names.index):
+            errors.append("Not all rows have a 'food name' value. This value is required - please add it for the missing rows, shown below:")
+            errors.append(mark_safe(empty_food_names.to_html(index=False, justify="left", classes="table")))
+
     except Exception as e:
         errors.append("There was a problem reading and interpreting the file. This is the error: " + str(e))
-
-    empty_food_names = df[df["Food name"].isna()]
-    if len(empty_food_names.index):
-        errors.append("Not all rows have a 'food name' value. This value is required - please add it for the missing rows, shown below:")
-        errors.append(mark_safe(empty_food_names.to_html(index=False, justify="left", classes="table")))
 
     activities = {}
     for each in Activity.objects.all():
@@ -864,11 +866,18 @@ def controlpanel_file(request, id):
             errors.append(f"No data records were located in your file.")
 
         if not errors:
-            Data.objects.filter(city=file.city).delete()
+            existing_data = Data.objects.filter(city=file.city)
+            data_was_deleted = False
+            if existing_data:
+                existing_data.delete()
+                data_was_deleted = True
             try:
                 Data.objects.bulk_create(items)
-                messages.success(request, "The data have been saved in the database. Previous data was overwritten.")
-                return redirect("controlpanel_city", id=file.city.id)
+                if data_was_deleted:
+                    messages.success(request, "The data have been saved in the database. Previous data was overwritten.")
+                else:
+                    messages.success(request, "The data have been saved in the database.")
+                return redirect(request.path)
             except Exception as e:
                 errors.append(f"We were unable to save the data. This is the error that came back: {e}")
 

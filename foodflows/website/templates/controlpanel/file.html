@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% load humanize %}
 
 {% block title %}Urban Food Flows{% endblock %}
 
@@ -34,7 +35,7 @@ dl div {
 
   <div>
   <dt>Uploader</dt>
-  <dd>{{ file.user.first_name }}</dd>
+  <dd>{% if file.user.first_name %}{{ file.user.first_name }}{% else %}{{ file.user }}{% endif %}</dd>
   </div>
 
   <div>
@@ -87,7 +88,7 @@ dl div {
       <td>{{ each.food }}</td>
       <td>{{ each.food_group }}</td>
       <td>{{ each.year }}</td>
-      <td>{{ each.quantity }}</td>
+      <td>{{ each.quantity|intcomma }}</td>
 
       <td>{{ each.location|default_if_none:"" }}</td>
       <td>{{ each.segment|default_if_none:"" }}</td>
@@ -112,56 +113,64 @@ dl div {
 
 {% else %}
 
-<h3>Data analysis</h3>
+<div class="row bg-body-tertiary mt-4 mb-4">
 
-{% if errors %}
-  {% for each in errors %}
-    <div class="alert alert-danger">{{ each }}</div>
-  {% endfor %}
-{% endif %}
+  <h3 class="mt-3">Data analysis</h3>
 
-<div class="split">
-  <dl>
-    <dt>Columns</dt>
-    <dd>{{ info.columns }}</dd>
+  {% if errors %}
+    {% for each in errors %}
+      <div class="alert alert-danger">{{ each }}</div>
+    {% endfor %}
+  {% endif %}
 
-    <dt>Number of rows</dt>
-    <dd><pre>{{ df.count }}</pre></dd>
 
-  </dl>
+  <div class="col-sm-6 mb-3 mt-3">
+    <dl>
+      <dt>Origins - <a href="{% url "controlpanel_activities" %}">View full list</a></dt>
+      <dd>
+        <ul>
+          {% for each in info.origins %}
+            <li class="text-{% if each in activities %}success{% else %}danger{% endif %}">{{ each }}</li>
+          {% endfor %}
+        </ul>
+      </dd>
+    </dl>
 
-  <dl>
-    <dt>Origins - <a href="{% url "controlpanel_activities" %}">View full list</a></dt>
-    <dd>
-      <ul>
-        {% for each in info.origins %}
-          <li class="text-{% if each in activities %}success{% else %}danger{% endif %}">{{ each }}</li>
-        {% endfor %}
-      </ul>
-    </dd>
-  </dl>
+    <dl>
+      <dt>Destinations - <a href="{% url "controlpanel_activities" %}">View full list</a></dt>
+      <dd>
+        <ul>
+          {% for each in info.destinations %}
+            <li class="text-{% if each in activities %}success{% else %}danger{% endif %}">{{ each }}</li>
+          {% endfor %}
+        </ul>
+      </dd>
+    </dl>
 
-  <dl>
-    <dt>Destinations - <a href="{% url "controlpanel_activities" %}">View full list</a></dt>
-    <dd>
-      <ul>
-        {% for each in info.destinations %}
-          <li class="text-{% if each in activities %}success{% else %}danger{% endif %}">{{ each }}</li>
-        {% endfor %}
-      </ul>
-    </dd>
-  </dl>
+    <dl>
+      <dt>Food groups - <a href="{% url "controlpanel_foodgroups" %}">View full list</a></dt>
+      <dd>
+        <ul>
+          {% for each in info.groups %}
+            <li class="text-{% if each in groups %}success{% else %}danger{% endif %}">{{ each }}</li>
+          {% endfor %}
+        </ul>
+      </dd>
+    </dl>
 
-  <dl>
-    <dt>Food groups - <a href="{% url "controlpanel_foodgroups" %}">View full list</a></dt>
-    <dd>
-      <ul>
-        {% for each in info.groups %}
-          <li class="text-{% if each in groups %}success{% else %}danger{% endif %}">{{ each }}</li>
-        {% endfor %}
-      </ul>
-    </dd>
-  </dl>
+  </div>
+
+  <div class="col-sm-6 mb-3 mt-3">
+    <dl>
+      <dt>Columns</dt>
+      <dd>{{ info.columns }}</dd>
+
+      <dt>Number of rows</dt>
+      <dd><pre>{{ df.count }}</pre></dd>
+
+    </dl>
+
+  </div>
 
 </div>
 
@@ -171,11 +180,14 @@ dl div {
   <div class="col-sm-6 mb-3 mb-sm-0">
     <div class="card ">
       <div class="card-body">
-        <h5 class="card-title">Save data</h5>
-        <p class="card-text">If everything looks good, you can save the data to the database. IMPORTANT: this will <strong>replace</strong>
+        <h5 class="card-title">Save datapoints</h5>
+        <p class="card-text">If everything looks good, you can save the data to the database. <br>IMPORTANT: this will <strong>replace</strong>
         all data currently in the database. You can always restore a previous file as long if needed.</p>
         <form method="post">
-          <button name="save" value="true" class="btn btn-success">Save data</button>
+          <button name="save" value="true" class="btn btn-success">
+            <i class="bi bi-database-fill-check"></i>
+            Save data into database
+          </button>
           {% csrf_token %}
         </form>
       </div>
@@ -187,7 +199,10 @@ dl div {
         <h5 class="card-title">Remove file</h5>
         <p class="card-text">Does this not look good? Fix the file and upload it again. Remove this file to keep the list clean.</p>
         <form method="post">
-          <button name="delete" value="true" class="btn btn-danger">Delete this file</button>
+          <button name="delete" value="true" class="btn btn-danger">
+            <i class="bi bi-trash"></i>
+            Delete this file
+          </button>
           {% csrf_token %}
         </form>
       </div>

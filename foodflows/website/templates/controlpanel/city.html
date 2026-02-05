@@ -27,7 +27,7 @@ tr.status-deleted{display:none}
       <tr class="status-{{ each.status }}">
         <td><a href="{% url "controlpanel_file" each.id %}">File #{{ each.id }}</a></td>
         <td>{{ each.date }}</td>
-        <td>{{ each.user }}</td>
+        <td>{% if each.user.first_name %}{{ each.user.first_name }}{% else %}{{ each.user }}{% endif %}</td>
         <td class="text-{% if each.status == "imported" %}success{% elif each.status == "superseded" %}danger{% endif %} text-bold">{{ each.status }}</td>
       </tr>
     {% endfor %}

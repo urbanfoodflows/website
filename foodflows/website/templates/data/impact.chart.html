@@ -148,6 +148,9 @@
           <option value="">Hide 'ideal diet' sample city</option>
           <option value="true" {% if request.GET.sample_city == "true" %}selected{% endif %}>Show 'ideal diet' sample city</option>
         </select>
+        {% for city in cities %}
+          <input type="hidden" name="cities" value="{{ city.id }}" />
+        {% endfor %}
       </div>
       <div class="col-auto">
         <button type="submit" class="btn btn-primary">Show graph</button>
